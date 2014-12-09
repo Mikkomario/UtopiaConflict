@@ -1,5 +1,6 @@
-package conflict_collision;
+package conflict_util;
 
+import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -402,6 +403,31 @@ public class Polygon
 	
 		// TODO: Add the MTV calculation once this version is tested
 		return true;
+	}
+	
+	/**
+	 * Draws this polygon. Can be used for testing, for example.
+	 * @param g2d The graphics object that does the drawing
+	 */
+	public void drawPolygon(Graphics2D g2d)
+	{
+		for (int i = 0; i < getVertexAmount(); i++)
+		{
+			g2d.drawLine(getVertex(i).getFirstInt(), getVertex(i).getSecondInt(), 
+					getVertex(i + 1).getFirstInt(), getVertex(i + 1).getSecondInt());
+		}
+	}
+	
+	/**
+	 * Draws the bounding box around this polygon
+	 * @param g2d The object that does the actual drawing
+	 */
+	public void drawBoundingBox(Graphics2D g2d)
+	{
+		Vector2D topLeft = getTopLeft(), dimensions = getDimensions();
+		
+		g2d.drawRect(topLeft.getFirstInt(), topLeft.getSecondInt(), dimensions.getFirstInt(), 
+				dimensions.getSecondInt());
 	}
 	
 	/**

@@ -1,5 +1,6 @@
 package conflict_collision;
 
+import conflict_util.Polygon;
 import genesis_util.Vector2D;
 
 /**
