@@ -63,8 +63,13 @@ public class MouseRotatingTestPolygonObject extends TestPolygonObject implements
 	@Override
 	public boolean isInAreaOfInterest(Vector2D position)
 	{
-		this.lastMousePosition = getTransformation().inverseTransform(position);
-		return getPolygon().pointisWithin(this.lastMousePosition);
+		if (getPolygon() != null)
+		{
+			this.lastMousePosition = getTransformation().inverseTransform(position);
+			return getPolygon().pointisWithin(this.lastMousePosition);
+		}
+		
+		return false;
 	}
 
 	@Override

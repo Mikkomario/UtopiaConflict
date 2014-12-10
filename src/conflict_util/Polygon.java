@@ -3,6 +3,7 @@ package conflict_util;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 
 import exodus_util.Transformation;
@@ -291,7 +292,7 @@ public class Polygon
 			return false;
 		
 		// Finds two vertices that are nearest to the given point
-		List<Vector2D> closestPoints = new ArrayList<Vector2D>();
+		List<Vector2D> closestPoints = new LinkedList<Vector2D>();
 		
 		for (int i = 0; i < getVertexAmount(); i++)
 		{
@@ -301,25 +302,42 @@ public class Polygon
 		// Finds the two most close points
 		while (closestPoints.size() > 2)
 		{
-			// Checks each index after the first two. If the point is closer than either of 
-			// those, the farther one is removed
-			if (closestPoints.get(2).getSecond() < closestPoints.get(0).getSecond())
-				closestPoints.remove(0);
-			else if (closestPoints.get(2).getSecond() < closestPoints.get(1).getSecond())
-				closestPoints.remove(1);
-			else
-				closestPoints.remove(2);
+			double farthestRange = closestPoints.get(0).getSecond();
+			int farthestIndex = 0;
+			
+			for (int i = 1; i < 3; i++)
+			{
+				double range = closestPoints.get(i).getSecond();
+				if (range > farthestRange)
+				{
+					farthestRange = range;
+					farthestIndex = i;
+				}
+			}
+			
+			closestPoints.remove(farthestIndex);
 		}
 		
-		// Checks that the points are in right order (indexwise)
-		if (closestPoints.get(0).getFirstInt() > closestPoints.get(1).getFirstInt())
+		/*
+		System.out.println("0 vs. 3: " + HelpMath.pointDistance(point, getVertex(0)) + " vs. " 
+				+ HelpMath.pointDistance(point, getVertex(3)));
+		*/
+		// Checks that the points are in right order (the first and the last go the 
+		// wrong way (index) by default)
+		
+		if (closestPoints.get(1).getFirstInt() - closestPoints.get(0).getFirstInt() > 
+				getVertexAmount() / 2)
 			closestPoints.add(closestPoints.remove(0));
+		
+		double dir1 = HelpMath.checkDirection(point.minus(
+				getVertex(closestPoints.get(0).getFirstInt())).getDirection());
+		double dir2 = HelpMath.checkDirection(getVertex(
+				closestPoints.get(1).getFirstInt()).minus(point).getDirection());
+		double turn = HelpMath.checkDirection(dir2 - dir1);
 		
 		// If a line going through the three points would make the polygon non-convex, 
 		// there is a collision 
-		return CirculationDirection.getTurnDirection(
-				closestPoints.get(1).minus(point).getDirection() - 
-				point.minus(closestPoints.get(0)).getDirection()) == this.direction;
+		return CirculationDirection.getTurnDirection(turn) != this.direction;
 	}
 	
 	/**
@@ -507,10 +525,10 @@ public class Polygon
 		 */
 		public static CirculationDirection getTurnDirection(double turnAngle)
 		{
-			if (turnAngle > 0)
+			if (turnAngle >= 0 && turnAngle < 180)
 				return COUNTERCLOCKWISE;
 			else
-				return COUNTERCLOCKWISE;
+				return CLOCKWISE;
 		}
 	}
 }
