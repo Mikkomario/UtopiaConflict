@@ -63,6 +63,13 @@ public class TestPolygonObject extends SimpleGameObject implements Transformable
 			g2d.setColor(Color.RED);
 			this.polygon.drawBoundingBox(g2d);
 			this.polygon.drawPolygon(g2d);
+			
+			g2d.setColor(Color.BLACK);
+			this.polygon.drawCollisionAxes(g2d);
+			
+			g2d.translate(0, 100);
+			this.polygon.getProjection(new Vector2D(1, 0)).draw(g2d);
+			
 			g2d.setTransform(lastTransform);
 		}
 	}

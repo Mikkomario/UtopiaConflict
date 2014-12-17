@@ -8,6 +8,7 @@ import java.util.List;
 
 import exodus_util.Transformation;
 import genesis_util.HelpMath;
+import genesis_util.Line;
 import genesis_util.Vector2D;
 
 /**
@@ -21,7 +22,8 @@ public class Polygon
 	// ATTRIBUTES	--------------------------
 	
 	private final Vector2D[] points;
-	private final CirculationDirection direction;
+	private CirculationDirection direction;
+	private List<Vector2D> axes;
 	
 	
 	// CONSTRUCTOR	--------------------------
@@ -35,7 +37,8 @@ public class Polygon
 	{
 		// Initializes attributes
 		this.points = vertexes;
-		this.direction = getCirculationDirection();
+		this.direction = null;
+		this.axes = null;
 	}
 
 	
@@ -60,14 +63,24 @@ public class Polygon
 	}
 	
 	/**
-	 * A vector at the given index of the polygon. The vector always points from the given index 
-	 * to the next vertex.
 	 * @param index The index of the vertex the vector starts from
-	 * @return A vector from the given vertex to the next vertex
+	 * @return A line from the given vertex to the next vertex
 	 */
-	public Vector2D getLine(int index)
+	public Line getEdge(int index)
 	{
-		return getVertex(index + 1).minus(getVertex(index));
+		return new Line(getVertex(index), getVertex(index + 1));
+	}
+	
+	/**
+	 * @return The collision axes used with this polygon. Each axis is normalized and 
+	 * perpendicular to an edge in the polygon.
+	 */
+	public List<Vector2D> getCollisionAxes()
+	{
+		if (this.axes == null)
+			this.axes = calculateAxes();
+		
+		return this.axes;
 	}
 	
 	/**
@@ -77,14 +90,10 @@ public class Polygon
 	{
 		// A polygon is convex if one only has to turn right or left when traversing the 
 		// polygon's sides
-		int vertexID = 1;
-		
-		while (vertexID < getVertexAmount())
+		for (int i = 0; i < getVertexAmount(); i++)
 		{
-			if (getCirculationDirection(vertexID) != this.direction)
+			if (getCirculationDirectionAt(i) != getCirculationDirection())
 				return false;
-			
-			vertexID ++;
 		}
 		
 		return true;
@@ -99,12 +108,14 @@ public class Polygon
 		ArrayList<Polygon> polygons = new ArrayList<>();
 		List<Integer> movedIndices = new ArrayList<>();
 		
+		// TODO: Won't work if there is only one broken index
+		
 		int lastBrokenIndex = -1;
 		
 		for (int index = 1; index <= getVertexAmount(); index ++)
 		{
 			// Checks if an index is broken (if there is a wrong direction at that point)
-			if (getCirculationDirection(index - 1) != this.direction)
+			if (getCirculationDirectionAt(index - 1) != getCirculationDirection())
 			{
 				// Constructs a new polygon from the "broken" area, non-borken vertexes that 
 				// will be added will be removed from this polygon
@@ -162,14 +173,10 @@ public class Polygon
 	 */
 	public CirculationDirection getCirculationDirection()
 	{
-		double totalTurn = 0;
+		if (this.direction == null)
+			this.direction = calculateCirculationDirection();
 		
-		for (int i = 0; i < getVertexAmount(); i++)
-		{
-			totalTurn += getLine(i + 1).getDirection() - getLine(i).getDirection();
-		}
-		
-		return CirculationDirection.getTurnDirection(totalTurn);
+		return this.direction;
 	}
 	
 	/**
@@ -318,10 +325,6 @@ public class Polygon
 			closestPoints.remove(farthestIndex);
 		}
 		
-		/*
-		System.out.println("0 vs. 3: " + HelpMath.pointDistance(point, getVertex(0)) + " vs. " 
-				+ HelpMath.pointDistance(point, getVertex(3)));
-		*/
 		// Checks that the points are in right order (the first and the last go the 
 		// wrong way (index) by default)
 		
@@ -337,35 +340,29 @@ public class Polygon
 		
 		// If a line going through the three points would make the polygon non-convex, 
 		// there is a collision 
-		return CirculationDirection.getTurnDirection(turn) != this.direction;
+		return CirculationDirection.getTurnDirection(turn) != getCirculationDirection();
 	}
 	
 	/**
-	 * Projects this polygon to the given axis. Returns both the starting point and the 
-	 * end point of the projection.
+	 * Projects this polygon to the given axis.
 	 * 
 	 * @param axis The axis along which the projection is done.
-	 * @return The starting point of the projection and the end point of the projection in 
-	 * an array with size 2.
+	 * @return A line projected from this polygon
 	 */
-	public Vector2D[] getProjection(Vector2D axis)
+	public Line getProjection(Vector2D axis)
 	{
 		List<Vector2D> projections = new ArrayList<>();
 		
 		// Projects all points in this polygon to the given axis
 		for (int i = 0; i < getVertexAmount(); i++)
 		{
-			 projections.add(getLine(i).vectorProjection(axis));
+			 projections.add(getVertex(i).vectorProjection(axis));
 		}
 		
 		// Picks two projected points, the smallest and the largest
-		Vector2D[] projection = new Vector2D[2];
-		
 		projections.sort(new ProjectionComparator());
-		projection[0] = projections.get(0);
-		projection[1] = projections.get(projections.size() - 1);
 		
-		return projection;
+		return new Line(projections.get(0), projections.get(projections.size() - 1));
 	}
 	
 	/**
@@ -387,38 +384,18 @@ public class Polygon
 	 */
 	public boolean collidesWith(Polygon other)
 	{
-		// Keeps track of all the axes that have been used
-		List<Vector2D> usedAxes = new ArrayList<>();
-		
-		Polygon[] polygons = {this, other};
-		for (Polygon axisProvider : polygons)
+		// Checks each axis, if there's an overlap on all of them, there is a collision
+		for (Vector2D axis : getCollisionAxes())
 		{
-			for (int lineIndex = 0; lineIndex < axisProvider.getVertexAmount(); lineIndex ++)
-			{
-				// Used axes are the normal vectors of each side of the polygon
-				Vector2D axis = axisProvider.getLine(lineIndex).normal();
-				
-				// Doesn't use axes that are parallel with any of the previous axes
-				boolean axisIsImportant = true;
-				for (Vector2D oldAxis : usedAxes)
-				{
-					if (axis.isParallerWith(oldAxis))
-					{
-						axisIsImportant = false;
-						break;
-					}
-				}
-				if (!axisIsImportant)
-					continue;
-				else
-					usedAxes.add(axis);
-				
-				// If there isn't overlapping on an axis, there is no collision
-				if (!overlapsAlongAxis(other, axis))
-					return false;
-			}
+			if (!overlapsAlongAxis(other, axis))
+				return false;
 		}
-	
+		for (Vector2D axis : other.getCollisionAxes())
+		{
+			if (!overlapsAlongAxis(other, axis))
+				return false;
+		}
+		
 		// TODO: Add the MTV calculation once this version is tested
 		return true;
 	}
@@ -449,34 +426,89 @@ public class Polygon
 	}
 	
 	/**
+	 * Draws visual representations of the collision axes on screen
+	 * @param g2d The graphics object that does the drawing
+	 */
+	public void drawCollisionAxes(Graphics2D g2d)
+	{
+		for (Vector2D axis : getCollisionAxes())
+		{
+			axis.times(100).drawAsLine(g2d);
+		}
+	}
+	
+	/**
 	 * Checks if two projections of polygons overlap each other.
-	 * @param p1 The projection of the first polygon. Must be an array with size 2.
-	 * @param p2 The projection of the second polygon. Must be an array with size 2.
+	 * @param p1 The projection of the first polygon.
+	 * @param p2 The projection of the second polygon.
 	 * @return do the two projections overlap each other
 	 */
-	public static boolean projectionsOverlap(Vector2D[] p1, Vector2D[] p2)
+	public static boolean projectionsOverlap(Line p1, Line p2)
 	{
-		if (p1.length < 2 || p2.length < 2)
-			throw new IllegalArgumentException("Invalid projections");
-		
 		ProjectionComparator comparator = new ProjectionComparator();
 		
 		// If either of the points in p2 is between the points in p1, there is a collision
-		for (int testPointIndex = 0; testPointIndex < 2; testPointIndex ++)
-		{
-			Vector2D testPoint = p2[testPointIndex];
-			if (comparator.compare(testPoint, p1[1]) <= 0 && 
-					comparator.compare(testPoint, p1[0]) >= 0)
-				return true;
-		}
+		
+		if (comparator.compare(p1.getStart(), p2.getEnd()) <= 0 && 
+				comparator.compare(p1.getStart(), p2.getStart()) >= 0)
+			return true;
+		if (comparator.compare(p1.getEnd(), p2.getEnd()) <= 0 && 
+				comparator.compare(p1.getEnd(), p2.getStart()) >= 0)
+			return true;
 		
 		return false;
 	}
 	
-	private CirculationDirection getCirculationDirection(int startIndex)
+	private CirculationDirection getCirculationDirectionAt(int startIndex)
 	{
-		return CirculationDirection.getTurnDirection(getLine(startIndex + 1).getDirection() - 
-				getLine(startIndex).getDirection());
+		return CirculationDirection.getTurnDirection(getEdge(startIndex + 1).getDirection() - 
+				getEdge(startIndex).getDirection());
+	}
+	
+	private CirculationDirection calculateCirculationDirection()
+	{
+		double totalTurn = 0;
+		
+		for (int i = 0; i < getVertexAmount(); i++)
+		{
+			double dir1 = getEdge(i).getDirection();
+			double dir2 = getEdge(1 + i).getDirection();
+			
+			if (dir1 > 180)
+				dir1 -= 360;
+			if (dir2 > 180)
+				dir2 -= 360;
+			
+			totalTurn += dir2 - dir1;
+		}
+		
+		return CirculationDirection.getTurnDirection(totalTurn);
+	}
+	
+	private List<Vector2D> calculateAxes()
+	{
+		List<Vector2D> newAxes = new ArrayList<>();
+		
+		for (int i = 0; i < getVertexAmount(); i ++)
+		{
+			Vector2D axis = getEdge(i).toVector().normal();
+			
+			// If there already is a paraller axis, doesn't use this one
+			boolean paraller = false;
+			for (Vector2D previousAxis : newAxes)
+			{
+				if (previousAxis.isParallerWith(axis))
+				{
+					paraller = true;
+					break;
+				}
+			}
+			
+			if (!paraller)
+				newAxes.add(axis);
+		}
+		
+		return newAxes;
 	}
 	
 	
@@ -525,7 +557,9 @@ public class Polygon
 		 */
 		public static CirculationDirection getTurnDirection(double turnAngle)
 		{
-			if (turnAngle >= 0 && turnAngle < 180)
+			double a = HelpMath.checkDirection(turnAngle);
+			
+			if (a >= 0 && a < 180)
 				return COUNTERCLOCKWISE;
 			else
 				return CLOCKWISE;

@@ -4,6 +4,7 @@ import exodus_util.Transformation;
 import genesis_event.DrawableHandler;
 import genesis_event.HandlerRelay;
 import genesis_event.MouseListenerHandler;
+import genesis_test.TextPerformanceMonitor;
 import genesis_util.Vector2D;
 import genesis_video.GamePanel;
 import genesis_video.GameWindow;
@@ -44,5 +45,9 @@ public class ConflictPolygonTest
 		// Creates a polygon
 		TestPolygonObject o = new MouseRotatingTestPolygonObject(5, handlers);
 		o.setTrasformation(Transformation.transitionTransformation(new Vector2D(200, 200)));
+		new TestMousePositionPolygonObject(3, handlers, o);
+		
+		// Checks performance as well
+		new TextPerformanceMonitor(1000, window.getStepHandler());
 	}
 }
