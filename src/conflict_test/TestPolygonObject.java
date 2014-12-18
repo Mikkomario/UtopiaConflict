@@ -50,6 +50,20 @@ public class TestPolygonObject extends SimpleGameObject implements Transformable
 		this.polygon = new Polygon(vertices);
 	}
 	
+	/**
+	 * Creates a new object
+	 * @param polygon The polygon this object uses
+	 * @param handlers The handlers that will handle this object
+	 */
+	public TestPolygonObject(Polygon polygon, HandlerRelay handlers)
+	{
+		super(handlers);
+		
+		this.polygon = polygon;
+		
+		System.out.println("New polygon with " + this.polygon.getVertexAmount() + " vertices");
+	}
+	
 	
 	// IMPLEMENTED METHODS	--------------------
 
@@ -62,6 +76,8 @@ public class TestPolygonObject extends SimpleGameObject implements Transformable
 			getTransformation().transform(g2d);
 			g2d.setColor(Color.RED);
 			this.polygon.drawBoundingBox(g2d);
+			
+			g2d.setColor(Color.BLUE);
 			this.polygon.drawPolygon(g2d);
 			
 			g2d.setColor(Color.BLACK);

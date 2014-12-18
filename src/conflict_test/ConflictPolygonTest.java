@@ -54,6 +54,11 @@ public class ConflictPolygonTest
 		o3.setTrasformation(Transformation.transitionTransformation(
 				new Vector2D(400, 300)).withScaling(new Vector2D(0.5, 0.5)));
 		
+		Vector2D[] vertices = {new Vector2D(50, -50), new Vector2D(-50, -50), 
+				/*new Vector2D(-25, 0),*/ new Vector2D(-50, 50), new Vector2D(50, 50), 
+				new Vector2D(25, 0)};
+		RandomConvexPolygonFactory.createPolygons(handlers, vertices, new Vector2D(700, 100));
+		
 		// Checks performance as well
 		new TextPerformanceMonitor(1000, window.getStepHandler());
 	}

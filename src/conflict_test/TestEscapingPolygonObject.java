@@ -46,6 +46,9 @@ public class TestEscapingPolygonObject extends TestPolygonObject implements
 	@Override
 	public void act(double duration)
 	{
+		if (this.other == null)
+			return;
+		
 		// If there's a collision with the other polygon, moves away
 		Vector2D mtv = getPolygon().transformedWith(getTransformation()).collidesWithMTV(
 				this.other.getPolygon().transformedWith(this.other.getTransformation()));

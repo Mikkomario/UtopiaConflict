@@ -30,13 +30,13 @@ public class Polygon
 	
 	/**
 	 * Creates a new polygon from the given points
-	 * @param vertexes The points that form this polygon. The points should be in order so that 
+	 * @param vertices The points that form this polygon. The points should be in order so that 
 	 * they form the lines that form this polygon.
 	 */
-	public Polygon(Vector2D[] vertexes)
+	public Polygon(Vector2D[] vertices)
 	{
 		// Initializes attributes
-		this.points = vertexes;
+		this.points = vertices;
 		this.direction = null;
 		this.axes = null;
 	}
@@ -166,7 +166,7 @@ public class Polygon
 			
 			for (int index = 0; index < getVertexAmount(); index ++)
 			{
-				if (!movedIndices.contains(index))
+				if (!movedIndices.contains(index) && !movedIndices.contains(index + getVertexAmount()))
 				{
 					remainingVertexes[newIndex] = getVertex(index);
 					newIndex ++;
