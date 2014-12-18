@@ -1,6 +1,7 @@
 package conflict_test;
 
 import exodus_util.Transformation;
+import genesis_event.ActorHandler;
 import genesis_event.DrawableHandler;
 import genesis_event.HandlerRelay;
 import genesis_event.MouseListenerHandler;
@@ -34,18 +35,24 @@ public class ConflictPolygonTest
 	public static void main(String[] args)
 	{
 		// Creates the window
-		GameWindow window = new GameWindow(new Vector2D(600, 400), "PolygonTest", true, 
+		GameWindow window = new GameWindow(new Vector2D(800, 600), "PolygonTest", true, 
 				120, 20);
 		GamePanel panel = window.getMainPanel().addGamePanel();
 		
 		HandlerRelay handlers = new HandlerRelay();
 		handlers.addHandler(new DrawableHandler(true, false, 0, 1, panel.getDrawer()));
 		handlers.addHandler(new MouseListenerHandler(true, window.getHandlerRelay()));
+		handlers.addHandler(new ActorHandler(true, window.getHandlerRelay()));
 		
-		// Creates a polygon
+		// Creates polygons
 		TestPolygonObject o = new MouseRotatingTestPolygonObject(5, handlers);
 		o.setTrasformation(Transformation.transitionTransformation(new Vector2D(200, 200)));
-		new TestMousePositionPolygonObject(3, handlers, o);
+		
+		TestPolygonObject o2 = new TestMousePositionPolygonObject(3, handlers, o);
+		
+		TestPolygonObject o3 = new TestEscapingPolygonObject(6, handlers, o2);
+		o3.setTrasformation(Transformation.transitionTransformation(
+				new Vector2D(400, 300)).withScaling(new Vector2D(0.5, 0.5)));
 		
 		// Checks performance as well
 		new TextPerformanceMonitor(1000, window.getStepHandler());

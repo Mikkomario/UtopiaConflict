@@ -108,8 +108,6 @@ public class Polygon
 		ArrayList<Polygon> polygons = new ArrayList<>();
 		List<Integer> movedIndices = new ArrayList<>();
 		
-		// TODO: Won't work if there is only one broken index
-		
 		int lastBrokenIndex = -1;
 		
 		for (int index = 1; index <= getVertexAmount(); index ++)
@@ -119,7 +117,7 @@ public class Polygon
 			{
 				// Constructs a new polygon from the "broken" area, non-borken vertexes that 
 				// will be added will be removed from this polygon
-				if (lastBrokenIndex != -1)
+				if (lastBrokenIndex != -1 && index - lastBrokenIndex > 1)
 				{
 					List<Vector2D> newPolyVertices = new ArrayList<Vector2D>();
 					newPolyVertices.add(getVertex(lastBrokenIndex));
@@ -139,6 +137,19 @@ public class Polygon
 				// Remembers the broken part
 				lastBrokenIndex = index;
 			}
+		}
+		
+		// If broken indexes were found but not cut, cuts the polygon in half (takes a triangle 
+		// out of the original polygon)
+		if (movedIndices.isEmpty() && lastBrokenIndex != -1)
+		{
+			Vector2D[] newPolyVertices = {getVertex(lastBrokenIndex), 
+					getVertex(lastBrokenIndex + 1), 
+					getVertex(lastBrokenIndex + 2)};
+			
+			polygons.add(new Polygon(newPolyVertices));
+			
+			movedIndices.add(lastBrokenIndex + 1);
 		}
 		
 		// Finally checks if another round is required
@@ -378,6 +389,20 @@ public class Polygon
 	}
 	
 	/**
+	 * Checks if the projections of the two vectors overlap each other when using the given 
+	 * axis. Returns the MTV applicable for this axis from the perspective of this polygon. 
+	 * If there is no overlap, returns null (the polygons can't be overlapping each other)
+	 * @param other The other polygon
+	 * @param axis The axis to which the polygons are projected to
+	 * @return The movement vector that will take this polygon outside the other polygon. Null 
+	 * if there is no overlapping.
+	 */
+	public Vector2D overlapsAlongAxisMTV(Polygon other, Vector2D axis)
+	{
+		return projectionsOverlapMTV(getProjection(axis), other.getProjection(axis));
+	}
+	
+	/**
 	 * Checks if the two polygons collide with each other
 	 * @param other The other polygon
 	 * @return Do the two polygons collide with each other
@@ -396,8 +421,55 @@ public class Polygon
 				return false;
 		}
 		
-		// TODO: Add the MTV calculation once this version is tested
 		return true;
+	}
+	
+	/**
+	 * Checks if the two polygons collide with each other and returns the minimum translation 
+	 * vector that gets this polygon outside the other polygon.
+	 * @param other The other polygon
+	 * @return The minimum translation vector that gets this polygon outside the other vector 
+	 * or null if the polygon's don't collide
+	 */
+	public Vector2D collidesWithMTV(Polygon other)
+	{
+		Vector2D mtv = null;
+		double smallestOverlap = -1;
+		
+		// Checks each axis, if there's an overlap on all of them, there is a collision
+		for (Vector2D axis : getCollisionAxes())
+		{
+			Vector2D overlapVector = overlapsAlongAxisMTV(other, axis);
+			
+			if (overlapVector == null)
+				return null;
+			
+			double overlapAmount = overlapVector.getLength();
+			
+			if (smallestOverlap < 0 || overlapAmount < smallestOverlap)
+			{
+				mtv = overlapVector;
+				smallestOverlap = overlapAmount;
+			}
+		}
+		// I know this is not dry, but I wouldn't want to create new lists at every check
+		for (Vector2D axis : other.getCollisionAxes())
+		{
+			Vector2D overlapVector = overlapsAlongAxisMTV(other, axis);
+			
+			if (overlapVector == null)
+				return null;
+			
+			double overlapAmount = overlapVector.getLength();
+			
+			if (smallestOverlap < 0 || overlapAmount < smallestOverlap)
+			{
+				mtv = overlapVector;
+				smallestOverlap = overlapAmount;
+			}
+		}
+		
+		return mtv;
 	}
 	
 	/**
@@ -447,8 +519,14 @@ public class Polygon
 	{
 		ProjectionComparator comparator = new ProjectionComparator();
 		
-		// If either of the points in p2 is between the points in p1, there is a collision
+		if (comparator.compare(p1.getEnd(), p2.getStart()) < 0 || 
+				comparator.compare(p2.getEnd(), p1.getStart()) < 0)
+			return false;
 		
+		return true;
+		
+		// If either of the points in p2 is between the points in p1, there is a collision
+		/*
 		if (comparator.compare(p1.getStart(), p2.getEnd()) <= 0 && 
 				comparator.compare(p1.getStart(), p2.getStart()) >= 0)
 			return true;
@@ -457,6 +535,41 @@ public class Polygon
 			return true;
 		
 		return false;
+		*/
+	}
+	
+	/**
+	 * Finds the minimum translation vector (MTV) that makes the projection p1 move outside 
+	 * the projection p2. If there is no overlapping, null is returned.
+	 * 
+	 * @param p1 The projection of the first polygon.
+	 * @param p2 The projection of the second polygon.
+	 * @return The MTV from the perspective of the first projection, null if the projections 
+	 * don't overlap each other
+	 */
+	public static Vector2D projectionsOverlapMTV(Line p1, Line p2)
+	{
+		ProjectionComparator comparator = new ProjectionComparator();
+		
+		// If there is no overlap, returns null
+		if (comparator.compare(p1.getEnd(), p2.getStart()) < 0 || 
+				comparator.compare(p2.getEnd(), p1.getStart()) < 0)
+			return null;
+		
+		// Otherwise checks if there is containment
+		/*
+		if (comparator.compare(p1.getEnd(), p2.getStart()) >= 0 && 
+				comparator.compare(p2.getEnd(), p1.getStart()) >= 0)
+		{
+			// TODO: Implement once the basic MTV has been tested
+		}
+		*/
+			
+		// Otherwise just returns the easiest way out (MTV)
+		if (comparator.compare(p1.getStart(), p2.getStart()) < 0)
+			return p2.getStart().minus(p1.getEnd());
+		else
+			return p2.getEnd().minus(p1.getStart());
 	}
 	
 	private CirculationDirection getCirculationDirectionAt(int startIndex)
