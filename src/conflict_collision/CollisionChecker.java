@@ -18,6 +18,7 @@ public class CollisionChecker
 	
 	private Collidable user;
 	private boolean userWantsMTV;
+	private Class<?>[] interestingClasses;
 	
 	
 	// CONSTRUCTOR	-----------------------
@@ -34,6 +35,7 @@ public class CollisionChecker
 		// Initializes attributes
 		this.user = user;
 		this.userWantsMTV = mtvWanted;
+		this.interestingClasses = null;
 	}
 	
 	
@@ -115,6 +117,37 @@ public class CollisionChecker
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Changes the set of classes this collision checker is interested in. By default the 
+	 * checker is interested in collisions with all classes but this can be limited with this 
+	 * method.
+	 * @param checkedClasses The classes the checker should be interested in. Null if the 
+	 * checker should be interested in collisions with all objects (default)
+	 */
+	public void limitCheckedClassesTo(Class<?>[] checkedClasses)
+	{
+		this.interestingClasses = checkedClasses;
+	}
+	
+	/**
+	 * Tells whether the collision checker should be used with the given object.
+	 * @param c The object that may be checked for collisions.
+	 * @return Should the collisions be checked for the object.
+	 */
+	public boolean isInterestedInCollisionsWith(Object c)
+	{
+		if (this.interestingClasses == null)
+			return true;
+		
+		for (int i = 0; i < this.interestingClasses.length; i++)
+		{
+			if (this.interestingClasses[i].isInstance(c))
+				return true;
+		}
+		
+		return false;
 	}
 	
 	private static ArrayList<Polygon> getAbsolutePolygons(Collidable c)

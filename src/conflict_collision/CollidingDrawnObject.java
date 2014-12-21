@@ -15,7 +15,7 @@ import vision_drawing.TransformationListener;
  * @since 30.6.2013.
  */
 public abstract class CollidingDrawnObject extends DimensionalDrawnObject 
-		implements CollisionListener, TransformationListener
+		implements CollisionListenerOld, TransformationListener
 {
 	// ATTRIBUTES	------------------------------------------------------
 	

@@ -1,34 +1,33 @@
 package conflict_collision;
 
-import genesis_logic.LogicalHandled;
-
-import java.awt.geom.Point2D;
-import java.util.ArrayList;
+import genesis_util.StateOperator;
 
 /**
- * Collisionlisteners are interested in collisions and react to them somehow. 
- * Each collisionlistener provides a set of collision points it listens to.<br>
- * Remember to add the object to a CollisionHandler
- *
- * @author Mikko Hilpinen.
- * @since 18.6.2013.
- * @see CollisionHandler
+ * CollisionListeners are interested in collision events with other objects and are informed 
+ * about those events by collisionHandlers.
+ * 
+ * @author Mikko Hilpinen
+ * @since 21.12.2014
  */
-public interface CollisionListener extends LogicalHandled
+public interface CollisionListener extends Collidable
 {
 	/**
-	 * @return The points which are used in the collision tests. Larger tables 
-	 * are a lot more precise but also much slower. The points should be 
-	 * absolute in-game pixels
+	 * Each collisionListener should be able to provide a collision checker that helps with 
+	 * collision checking
+	 * @return The collision checker the object uses
 	 */
-	public Point2D.Double[] getCollisionPoints();
+	public CollisionChecker getCollisionChecker();
 	
 	/**
-	 * This method is called each time the listening object collides with 
-	 * an object
-	 * @param colpoints The points in which the collision(s) happened (absolute)
-	 * @param collided The object with which the collision(s) happened
-	 * @param steps The duration of the collision in steps
+	 * CollisionListeners should react to collision events with certain objects
+	 * @param event The event that originated from a collision between the listener and 
+	 * another object.
 	 */
-	public void onCollision(ArrayList<Point2D.Double> colpoints, CollidableOld collided, double steps);
+	public void onCollisionEvent(CollisionEvent event);
+	
+	/**
+	 * @return The stateOperator that determines whether the object should be informed about 
+	 * collision events at all.
+	 */
+	public StateOperator getListensForCollisionStateOperator();
 }

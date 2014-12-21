@@ -1,157 +1,299 @@
 package conflict_collision;
 
-import genesis_logic.Actor;
-import genesis_logic.ActorHandler;
-import genesis_logic.Handled;
-import genesis_logic.LogicalHandler;
-
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
+
+import genesis_event.Actor;
+import genesis_event.ActorHandler;
+import genesis_event.Handled;
+import genesis_event.Handler;
+import genesis_event.HandlerRelay;
+import genesis_event.HandlerType;
+import genesis_util.StateOperator;
+import genesis_util.Vector2D;
 
 /**
- * A handler that checks collisions between multiple collisionlisteners and 
- * Collidables
- *
- * @author Mikko Hilpinen.
- * @since 18.6.2013.
+ * CollisionHandlers inform collision listeners about collision events. They also keep track 
+ * of all the collidables those listeners can collide with.
+ * 
+ * @author Mikko Hilpinen
+ * @since 21.12.2014
  */
-public class CollisionHandler extends LogicalHandler implements Actor
+public class CollisionHandler extends Handler<CollisionListener> implements Actor
 {
-	// ATTRIBUTES	-----------------------------------------------------
+	// ATTRIBUTES	----------------------------
 	
-	private CollidableHandler collidablehandler;
-	private double lastStepLength;
+	private CollidableHandler collidableHandler;
+	private double lastDuration;
+	private StateOperator isActiveOperator;
+	private List<CollisionListener> previousListeners;
 	
 	
-	// CONSTRUCTOR	-----------------------------------------------------
+	// CONSTRUCTOR	---------------------------
 	
 	/**
-	 * Creates a new empty collisionhandler
-	 *
-	 * @param autodeath Will the handler die when it runs out of listeners
-	 * @param superhandler Which actorhandler will inform the handler about 
-	 * the act-event (Optional)
+	 * Creates a new handler
+	 * 
+	 * @param autoDeath Will the handler die once it runs out of listeners
+	 * @param actorHandler The actorHandler that will inform the handler about step events
 	 */
-	public CollisionHandler(boolean autodeath, ActorHandler superhandler)
+	public CollisionHandler(boolean autoDeath, ActorHandler actorHandler)
 	{
-		super(autodeath, superhandler);
+		super(autoDeath);
 		
 		// Initializes attributes
-		this.collidablehandler = new CollidableHandler(false, null);
-		this.lastStepLength = 1;
+		this.collidableHandler = new CollidableHandler(this);
+		this.isActiveOperator = new AnyListenerIsActiveOperator();
+		this.previousListeners = new ArrayList<>();
+		
+		if (actorHandler != null)
+			actorHandler.add(this);
+	}
+	
+	/**
+	 * Creates a new handler
+	 * 
+	 * @param autoDeath Will the handler die once it runs out of listeners
+	 * @param superHandlers The handlers that will handle this handler
+	 */
+	public CollisionHandler(boolean autoDeath, HandlerRelay superHandlers)
+	{
+		super(autoDeath, superHandlers);
+		
+		// Initializes attributes
+		this.collidableHandler = new CollidableHandler(this);
+		this.isActiveOperator = new AnyListenerIsActiveOperator();
+		this.previousListeners = new ArrayList<>();
+	}
+	
+	/**
+	 * Creates a new handler. The handler must be added to an actorHandler manually.
+	 * 
+	 * @param autoDeath Will the handler die once it runs out of handleds.
+	 */
+	public CollisionHandler(boolean autoDeath)
+	{
+		super(autoDeath);
+		
+		// Initializes attributes
+		this.collidableHandler = new CollidableHandler(this);
+		this.isActiveOperator = new AnyListenerIsActiveOperator();
+		this.previousListeners = new ArrayList<>();
 	}
 	
 	
-	// IMPLEMENTED METHODS	--------------------------------------------
+	// IMPLEMENTED METHODS	--------------------
 
 	@Override
-	public void act(double steps)
+	public void act(double duration)
 	{
-		// Handles the objects normally = checks collisions
-		this.lastStepLength = steps;
-		handleObjects();
-	}
-	
-	@Override
-	protected Class<?> getSupportedClass()
-	{
-		return CollisionListener.class;
-	}
-	
-	@Override
-	protected boolean handleObject(Handled h)
-	{
-		CollisionListener listener = (CollisionListener) h;
-		
-		// Inactive listeners are not counted
-		if (!listener.isActive())
-			return true;
-		
-		Point2D.Double[] colpoints = listener.getCollisionPoints();
-		
-		// If collision points could not be read, skips the object
-		if (colpoints == null)
+		// Only works if the collidableHandler is still alive
+		if (!this.collidableHandler.getIsDeadStateOperator().getState())
 		{
-			System.err.println("CollisionListener " + h + 
-					" doesn't provide viable collision points.");
-			return true;
+			// Checks for collisions
+			this.lastDuration = duration;
+			handleObjects();
+			this.previousListeners.clear();
 		}
-		
-		HashMap<CollidableOld, ArrayList<Point2D.Double>> collidedpoints = 
-				new HashMap<CollidableOld, ArrayList<Point2D.Double>>();
-		
-		// Goes throug each point and checks collided objects
-		for (Point2D.Double colpoint : colpoints)
+	}
+
+	@Override
+	public StateOperator getIsActiveStateOperator()
+	{
+		return this.isActiveOperator;
+	}
+
+	@Override
+	public HandlerType getHandlerType()
+	{
+		return ConflictHandlerType.COLLISIONHANDLER;
+	}
+
+	@Override
+	protected boolean handleObject(CollisionListener h)
+	{
+		// Only active listeners are informed
+		if (h.getListensForCollisionStateOperator().getState())
 		{
-			ArrayList<CollidableOld> collided = 
-					this.collidablehandler.getCollidedObjectsAtPoint(colpoint, 
-							listener);
-			// If no collisions were detected, moves on
-			if (collided == null)
-				continue;
-			
-			// If collisions were detected, adds them to the map
-			for (CollidableOld c : collided)
+			// Checks for collisions with the already handled listeners
+			for (CollisionListener previousListener : this.previousListeners)
 			{
-				// Objects can't collide with themselves
-				if (c.equals(listener))
-					continue;
+				CollisionEvent event = null;
 				
-				if (!collidedpoints.containsKey(c))
-					collidedpoints.put(c, new ArrayList<Point2D.Double>());
+				// Checks if either of the listeners wants to use the mtv
+				if (h.getCollisionChecker().mtvShouldBeCalculated() || 
+						previousListener.getCollisionChecker().mtvShouldBeCalculated())
+				{
+					Vector2D mtv = h.getCollisionChecker().objectCollidesMTV(previousListener);
+					
+					if (mtv != null)
+						event = new CollisionEvent(h, previousListener, mtv, this.lastDuration);
+				}
+				else if (h.getCollisionChecker().objectCollides(previousListener))
+					event = new CollisionEvent(h, previousListener, null, this.lastDuration);
 				
-				collidedpoints.get(c).add(colpoint);
+				if (event != null)
+				{
+					h.onCollisionEvent(event);
+					if (previousListener.getListensForCollisionStateOperator().getState())
+						previousListener.onCollisionEvent(event);
+				}
 			}
+			
+			// Also checks for collisions with other collidables
+			this.collidableHandler.checkForCollisionsWith(h, this.lastDuration);
 		}
-		
-		// Informs the listener about each object it collided with
-		for (CollidableOld c: collidedpoints.keySet())
-			listener.onCollision(collidedpoints.get(c), c, this.lastStepLength);
-		
+			
+		this.previousListeners.add(h);
 		return true;
 	}
 	
 	@Override
-	public void kill()
+	public void removeHandled(Handled c)
 	{
-		// In addition to the normal killing, kills the collidablehandler as well
-		getCollidableHandler().kill();
-		super.kill();
+		if (c instanceof CollisionListener)
+			super.removeHandled(c);
+		else
+			this.collidableHandler.removeHandled(c);
+	}
+	
+	@Override
+	public void removeAllHandleds()
+	{
+		super.removeAllHandleds();
+		this.collidableHandler.removeAllHandleds();
 	}
 	
 	
-	// GETTERS & SETTERS	----------------------------------------------
+	// OTHER METHODS	------------------------
 	
 	/**
-	 * @return The collidablehandler that handles the collisionhandler's 
-	 * collision checking
+	 * Adds a new collidable or a collision listener to the handler
+	 * @param c The collidable / collision listener that will be added to the handler
 	 */
-	public CollidableHandler getCollidableHandler()
+	public void add(Collidable c)
 	{
-		return this.collidablehandler;
-	}
-	
-	
-	// OTHER METHODS	--------------------------------------------------
-	
-	/**
-	 * Adds a new collisionlistener to the checked listeners
-	 *
-	 * @param c The new collisionlistener
-	 */
-	public void addCollisionListener(CollisionListener c)
-	{
-		super.addHandled(c);
+		if (c instanceof CollisionListener)
+			super.add((CollisionListener) c);
+		else
+			this.collidableHandler.add(c);
 	}
 	
 	/**
-	 * Adds a new collidable to the list of checkked collidables
-	 *
-	 * @param c The collidable to be added
+	 * Transfers all the collision listeners and collidables from the other collision handler 
+	 * to this collision handler
+	 * @param other The collision handler that will be emptied
 	 */
-	public void addCollidable(CollidableOld c)
+	public void transferHandledsFrom(CollisionHandler other)
 	{
-		this.collidablehandler.addCollidable(c);
+		super.transferHandledsFrom(other);
+		this.collidableHandler.transferHandledsFrom(other.collidableHandler);
+	}
+
+	
+	// SUBCLASSES	----------------------------
+	
+	private static class CollidableHandler extends Handler<Collidable>
+	{
+		// ATTRIBUTES	-----------------------------
+		
+		private CollisionListener lastListener;
+		private double lastDuration;
+		private CollisionHandler masterHandler;
+		
+		
+		// CONSTRUCTOR	-----------------------------
+		
+		public CollidableHandler(CollisionHandler masterHandler)
+		{
+			super(false);
+			
+			this.masterHandler = masterHandler;
+			this.masterHandler.getIsDeadStateOperator().getListenerHandler().add(this);
+		}
+		
+		
+		// IMPLEMENTED METHODS	---------------------
+
+		@Override
+		public HandlerType getHandlerType()
+		{
+			return ConflictHandlerType.COLLIDABLEHANLDER;
+		}
+
+		@Override
+		protected boolean handleObject(Collidable h)
+		{
+			// Checks if the two objects accept each other as collided objects (= is collision 
+			// checking necessary)
+			if (!h.getCanBeCollidedWithOperator().getState())
+				return true;
+			
+			if (!h.getCollisionInformation().allowsCollisionEventsFor(this.lastListener) || 
+					!this.lastListener.getCollisionChecker().isInterestedInCollisionsWith(h))
+				return true;
+			
+			// Checks for collisions between the collidable and the collision listener
+			// Calculates the mtv if necessary
+			if (this.lastListener.getCollisionChecker().mtvShouldBeCalculated())
+			{
+				Vector2D mtv = this.lastListener.getCollisionChecker().objectCollidesMTV(h);
+				
+				if (mtv != null)
+					this.lastListener.onCollisionEvent(
+							new CollisionEvent(this.lastListener, h, mtv, this.lastDuration));
+			}
+			else if (this.lastListener.getCollisionChecker().objectCollides(h))
+				this.lastListener.onCollisionEvent(new CollisionEvent(this.lastListener, h, 
+						null, this.lastDuration));
+			
+			return true;
+		}
+		
+		@Override
+		public void onStateChange(StateOperator source, boolean newState)
+		{
+			super.onStateChange(source, newState);
+			
+			// In addition to the normal state checking, dies if the collision handler dies
+			if (source == this.masterHandler.getIsDeadStateOperator() && newState)
+				getIsDeadStateOperator().setState(true);
+		}
+		
+		
+		// OTHER METHODS	------------------------
+		
+		public void checkForCollisionsWith(CollisionListener listener, double duration)
+		{
+			this.lastDuration = duration;
+			this.lastListener = listener;
+			handleObjects();
+			this.lastListener = null;
+		}
+	}
+	
+	private class AnyListenerIsActiveOperator extends ForAnyHandledsOperator
+	{
+		// CONSTRUCTOR	-------------------------
+		
+		public AnyListenerIsActiveOperator()
+		{
+			super(true);
+		}
+		
+		
+		// IMPLEMENTED METHODS	-------------------
+
+		@Override
+		protected void changeHandledState(CollisionListener c, boolean newState)
+		{
+			c.getListensForCollisionStateOperator().setState(newState);
+		}
+
+		@Override
+		protected boolean getHandledState(CollisionListener c)
+		{
+			return c.getListensForCollisionStateOperator().getState();
+		}
 	}
 }

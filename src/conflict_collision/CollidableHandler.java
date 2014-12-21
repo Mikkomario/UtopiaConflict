@@ -72,7 +72,7 @@ public class CollidableHandler extends Handler
 	 * collided with the point
 	 */
 	public ArrayList<CollidableOld> getCollidedObjectsAtPoint(Point2D collisionPoint, 
-			CollisionListener listener)
+			CollisionListenerOld listener)
 	{
 		// Initializes the operator
 		CollisionCheckOperator checkoperator = 
@@ -143,14 +143,14 @@ public class CollidableHandler extends Handler
 		
 		private ArrayList<CollidableOld> collided;
 		private Point2D checkPosition;
-		private CollisionListener listener;
+		private CollisionListenerOld listener;
 		
 		
 		// CONSTRUCTOR	-------------------------------------------------
 		
 		// Listener is not changed in any way during the process
 		public CollisionCheckOperator(Point2D checkPosition, 
-				CollisionListener listener)
+				CollisionListenerOld listener)
 		{
 			this.checkPosition = checkPosition;
 			this.collided = new ArrayList<CollidableOld>();
