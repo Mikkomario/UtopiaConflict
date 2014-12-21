@@ -21,7 +21,7 @@ public class Polygon
 {
 	// ATTRIBUTES	--------------------------
 	
-	private final Vector2D[] points;
+	private final Vector2D[] vertices;
 	private CirculationDirection direction;
 	private List<Vector2D> axes;
 	
@@ -36,9 +36,33 @@ public class Polygon
 	public Polygon(Vector2D[] vertices)
 	{
 		// Initializes attributes
-		this.points = vertices;
+		this.vertices = vertices;
 		this.direction = null;
 		this.axes = null;
+	}
+	
+	/**
+	 * Creates a new polygon by copying the other polygon
+	 * 
+	 * @param other The polygon that will be copied
+	 */
+	public Polygon(Polygon other)
+	{
+		this.vertices = other.getVertices();
+		this.direction = other.direction;
+		this.axes = other.axes;
+	}
+	
+	
+	// GETTERS & SETTERS	------------------
+	
+	/**
+	 * @return The vertices that form this polygon (cloned, can't be used for changing the 
+	 * polygon)
+	 */
+	public Vector2D[] getVertices()
+	{
+		return this.vertices.clone();
 	}
 
 	
@@ -49,7 +73,7 @@ public class Polygon
 	 */
 	public int getVertexAmount()
 	{
-		return this.points.length;
+		return this.vertices.length;
 	}
 	
 	/**
@@ -59,7 +83,7 @@ public class Polygon
 	 */
 	public Vector2D getVertex(int index)
 	{
-		return this.points[index % getVertexAmount()];
+		return this.vertices[index % getVertexAmount()];
 	}
 	
 	/**
@@ -246,7 +270,7 @@ public class Polygon
 		double largestX = -100000;
 		double largestY = -100000;
 		
-		for (Vector2D vertex : this.points)
+		for (Vector2D vertex : this.vertices)
 		{
 			if (vertex.getFirst() > largestX)
 				largestX = vertex.getFirst();
@@ -269,7 +293,7 @@ public class Polygon
 		double smallestX = 100000;
 		double smallestY = 100000;
 		
-		for (Vector2D vertex : this.points)
+		for (Vector2D vertex : this.vertices)
 		{
 			if (vertex.getFirst() < smallestX)
 				smallestX = vertex.getFirst();

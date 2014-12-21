@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import genesis_event.Actor;
-import genesis_event.ActorHandler;
 import genesis_event.Handled;
 import genesis_event.Handler;
 import genesis_event.HandlerRelay;
@@ -31,12 +30,13 @@ public class CollisionHandler extends Handler<CollisionListener> implements Acto
 	
 	// CONSTRUCTOR	---------------------------
 	
-	/**
+	/*
 	 * Creates a new handler
 	 * 
 	 * @param autoDeath Will the handler die once it runs out of listeners
 	 * @param actorHandler The actorHandler that will inform the handler about step events
 	 */
+	/*
 	public CollisionHandler(boolean autoDeath, ActorHandler actorHandler)
 	{
 		super(autoDeath);
@@ -49,6 +49,7 @@ public class CollisionHandler extends Handler<CollisionListener> implements Acto
 		if (actorHandler != null)
 			actorHandler.add(this);
 	}
+	*/
 	
 	/**
 	 * Creates a new handler
@@ -64,13 +65,16 @@ public class CollisionHandler extends Handler<CollisionListener> implements Acto
 		this.collidableHandler = new CollidableHandler(this);
 		this.isActiveOperator = new AnyListenerIsActiveOperator();
 		this.previousListeners = new ArrayList<>();
+		
+		superHandlers.addHandler(this.collidableHandler);
 	}
 	
-	/**
+	/*
 	 * Creates a new handler. The handler must be added to an actorHandler manually.
 	 * 
 	 * @param autoDeath Will the handler die once it runs out of handleds.
 	 */
+	/*
 	public CollisionHandler(boolean autoDeath)
 	{
 		super(autoDeath);
@@ -80,6 +84,7 @@ public class CollisionHandler extends Handler<CollisionListener> implements Acto
 		this.isActiveOperator = new AnyListenerIsActiveOperator();
 		this.previousListeners = new ArrayList<>();
 	}
+	*/
 	
 	
 	// IMPLEMENTED METHODS	--------------------
@@ -118,11 +123,25 @@ public class CollisionHandler extends Handler<CollisionListener> implements Acto
 			// Checks for collisions with the already handled listeners
 			for (CollisionListener previousListener : this.previousListeners)
 			{
+				// Checks if the collision should be checked at all / who is interested in 
+				// the event
+				boolean currentIsInterested = 
+						h.getCollisionChecker().isInterestedInCollisionsWith(previousListener) 
+						&& previousListener.getCollisionInformation().allowsCollisionEventsFor(h);
+				boolean previousIsInterested = 
+						previousListener.getListensForCollisionStateOperator().getState() && 
+						previousListener.getCollisionChecker().isInterestedInCollisionsWith(h) 
+						&& h.getCollisionInformation().allowsCollisionEventsFor(previousListener);
+				
+				if (!currentIsInterested && !previousIsInterested)
+					continue;
+				
 				CollisionEvent event = null;
 				
 				// Checks if either of the listeners wants to use the mtv
-				if (h.getCollisionChecker().mtvShouldBeCalculated() || 
-						previousListener.getCollisionChecker().mtvShouldBeCalculated())
+				if ((currentIsInterested && h.getCollisionChecker().mtvShouldBeCalculated()) || 
+						(previousIsInterested && 
+						previousListener.getCollisionChecker().mtvShouldBeCalculated()))
 				{
 					Vector2D mtv = h.getCollisionChecker().objectCollidesMTV(previousListener);
 					
@@ -132,11 +151,17 @@ public class CollisionHandler extends Handler<CollisionListener> implements Acto
 				else if (h.getCollisionChecker().objectCollides(previousListener))
 					event = new CollisionEvent(h, previousListener, null, this.lastDuration);
 				
+				// If there was a collision informs the interested participants
 				if (event != null)
 				{
-					h.onCollisionEvent(event);
-					if (previousListener.getListensForCollisionStateOperator().getState())
+					if (currentIsInterested)
+						h.onCollisionEvent(event);
+					if (previousIsInterested)
+					{
+						if (!currentIsInterested)
+							event = event.fromTargetsPointOfView();
 						previousListener.onCollisionEvent(event);
+					}
 				}
 			}
 			
@@ -162,6 +187,18 @@ public class CollisionHandler extends Handler<CollisionListener> implements Acto
 	{
 		super.removeAllHandleds();
 		this.collidableHandler.removeAllHandleds();
+	}
+	
+	
+	// GETTERS & SETTERS	--------------------
+	
+	/**
+	 * @return The collidableHandler used by this collision handler. The collidableHandler 
+	 * handles collidable objects that are not collision listeners
+	 */
+	public CollidableHandler getCollidableHandler()
+	{
+		return this.collidableHandler;
 	}
 	
 	
@@ -226,7 +263,7 @@ public class CollisionHandler extends Handler<CollisionListener> implements Acto
 		{
 			// Checks if the two objects accept each other as collided objects (= is collision 
 			// checking necessary)
-			if (!h.getCanBeCollidedWithOperator().getState())
+			if (!h.getCanBeCollidedWithStateOperator().getState())
 				return true;
 			
 			if (!h.getCollisionInformation().allowsCollisionEventsFor(this.lastListener) || 
@@ -258,6 +295,16 @@ public class CollisionHandler extends Handler<CollisionListener> implements Acto
 			// In addition to the normal state checking, dies if the collision handler dies
 			if (source == this.masterHandler.getIsDeadStateOperator() && newState)
 				getIsDeadStateOperator().setState(true);
+		}
+		
+		@Override
+		public void add(Collidable c)
+		{
+			// Doesn't accept collisionListeners
+			if (c instanceof CollisionListener)
+				this.masterHandler.add(c);
+			else
+				super.add(c);
 		}
 		
 		

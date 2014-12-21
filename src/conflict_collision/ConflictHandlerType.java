@@ -28,6 +28,12 @@ public enum ConflictHandlerType implements HandlerType
 	@Override
 	public Class<?> getSupportedHandledClass()
 	{
-		return Collidable.class;
+		switch (this)
+		{
+			case COLLISIONHANDLER: return CollisionListener.class;
+			case COLLIDABLEHANLDER: return Collidable.class;
+		}
+		
+		return null;
 	}
 }

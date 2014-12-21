@@ -126,4 +126,14 @@ public class CollisionEvent
 		else
 			return null;
 	}
+	
+	/**
+	 * @return The collision event from the target object's point of view (the target will 
+	 * be the listener of the new event)
+	 */
+	public CollisionEvent fromTargetsPointOfView()
+	{
+		return new CollisionEvent(getTarget(), getListener(), 
+				getMTV() == null ? null : getMTV().reverse(), getDuration());
+	}
 }

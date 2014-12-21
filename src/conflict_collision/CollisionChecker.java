@@ -49,6 +49,16 @@ public class CollisionChecker
 		return this.userWantsMTV;
 	}
 	
+	/*
+	 * @return The collidable object the collisions are checked with
+	 */
+	/*
+	public Collidable getUserObject()
+	{
+		return this.user;
+	}
+	*/
+	
 	
 	// OTHER METHODS	-------------------
 	

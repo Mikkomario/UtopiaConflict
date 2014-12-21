@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 
+import conflict_collision.Collidable;
+import conflict_collision.CollisionInformation;
 import conflict_util.Polygon;
 import exodus_object.SimpleGameObject;
 import exodus_util.Transformable;
@@ -19,12 +21,14 @@ import genesis_util.Vector2D;
  * @author Mikko Hilpinen
  * @since 9.12.2014
  */
-public class TestPolygonObject extends SimpleGameObject implements Transformable, Drawable
+public class TestPolygonObject extends SimpleGameObject implements Transformable, Drawable, 
+		Collidable
 {
 	// ATTRIBUTES	-------------------------
 	
 	private Polygon polygon;
 	private Transformation transformation;
+	private CollisionInformation collisionInformation;
 	
 	
 	// CONSTRUCTOR	-------------------------
@@ -48,6 +52,9 @@ public class TestPolygonObject extends SimpleGameObject implements Transformable
 			vertices[i] = new Vector2D(100, 0).withDirection(360 / vertexAmount * i);
 		}
 		this.polygon = new Polygon(vertices);
+		
+		// Creates collision information
+		this.collisionInformation = new CollisionInformation(vertices);
 	}
 	
 	/**
@@ -60,8 +67,8 @@ public class TestPolygonObject extends SimpleGameObject implements Transformable
 		super(handlers);
 		
 		this.polygon = polygon;
-		
-		System.out.println("New polygon with " + this.polygon.getVertexAmount() + " vertices");
+		this.transformation = new Transformation();
+		this.collisionInformation = new CollisionInformation(polygon.getVertices());
 	}
 	
 	
@@ -118,6 +125,18 @@ public class TestPolygonObject extends SimpleGameObject implements Transformable
 	public void setTrasformation(Transformation t)
 	{
 		this.transformation = t;
+	}
+	
+	@Override
+	public CollisionInformation getCollisionInformation()
+	{
+		return this.collisionInformation;
+	}
+
+	@Override
+	public StateOperator getCanBeCollidedWithStateOperator()
+	{
+		return getIsActiveStateOperator();
 	}
 	
 	

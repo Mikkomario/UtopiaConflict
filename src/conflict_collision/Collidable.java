@@ -21,5 +21,5 @@ public interface Collidable extends Handled, Transformable
 	 * @return The state operator that tells whether the object can be collided with 
 	 * or not.
 	 */
-	public StateOperator getCanBeCollidedWithOperator();
+	public StateOperator getCanBeCollidedWithStateOperator();
 }

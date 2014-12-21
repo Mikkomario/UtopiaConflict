@@ -1,5 +1,6 @@
 package conflict_test;
 
+import conflict_collision.CollisionHandler;
 import exodus_util.Transformation;
 import genesis_event.ActorHandler;
 import genesis_event.DrawableHandler;
@@ -43,16 +44,21 @@ public class ConflictPolygonTest
 		handlers.addHandler(new DrawableHandler(true, false, 0, 1, panel.getDrawer()));
 		handlers.addHandler(new MouseListenerHandler(true, window.getHandlerRelay()));
 		handlers.addHandler(new ActorHandler(true, window.getHandlerRelay()));
+		handlers.addHandler(new CollisionHandler(true, handlers));
 		
 		// Creates polygons
 		TestPolygonObject o = new MouseRotatingTestPolygonObject(5, handlers);
 		o.setTrasformation(Transformation.transitionTransformation(new Vector2D(200, 200)));
 		
-		TestPolygonObject o2 = new TestMousePositionPolygonObject(3, handlers, o);
+		new TestMousePositionPolygonObject(3, handlers, o);
 		
-		TestPolygonObject o3 = new TestEscapingPolygonObject(6, handlers, o2);
+		TestPolygonObject o3 = new TestEscapingPolygonObject(6, handlers);
 		o3.setTrasformation(Transformation.transitionTransformation(
 				new Vector2D(400, 300)).withScaling(new Vector2D(0.5, 0.5)));
+		
+		TestPolygonObject o4 = new TestEscapingPolygonObject(7, handlers);
+		o4.setTrasformation(Transformation.transitionTransformation(
+				new Vector2D(600, 400)).withScaling(new Vector2D(0.5, 0.5)));
 		
 		Vector2D[] vertices = {new Vector2D(50, -50), new Vector2D(-50, -50), 
 				/*new Vector2D(-25, 0),*/ new Vector2D(-50, 50), new Vector2D(50, 50), 

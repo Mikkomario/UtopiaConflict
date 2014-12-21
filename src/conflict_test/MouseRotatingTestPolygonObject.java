@@ -83,7 +83,7 @@ public class MouseRotatingTestPolygonObject extends TestPolygonObject implements
 	@Override
 	public void drawSelf(Graphics2D g2d)
 	{
-		if (getTransformation() != null && getPolygon() != null)
+		if (getTransformation() != null && getPolygon() != null && this.lastMousePosition != null)
 		{
 			AffineTransform lastTransform = g2d.getTransform();
 			getTransformation().transform(g2d);
