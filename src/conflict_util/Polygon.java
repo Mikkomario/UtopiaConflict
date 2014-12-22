@@ -54,6 +54,21 @@ public class Polygon
 	}
 	
 	
+	// IMPLEMENTED METHODS	------------------
+	
+	@Override
+	public String toString()
+	{
+		String s = getVertex(0).toString();
+		for (int i = 1; i < getVertexAmount(); i++)
+		{
+			s += ";" + getVertex(i).toString();
+		}
+		
+		return s;
+	}
+	
+	
 	// GETTERS & SETTERS	------------------
 	
 	/**
@@ -594,6 +609,25 @@ public class Polygon
 			return p2.getStart().minus(p1.getEnd());
 		else
 			return p2.getEnd().minus(p1.getStart());
+	}
+	
+	/**
+	 * Creates a polygon by parsing it from a string.
+	 * @param s The string that contains the polygon's vertex data. The vertices are separated 
+	 * with a ';' while the x and y components of each vertex are separated with a ','. For 
+	 * example, "3,2;2,2;5,4" would be a valid polygon string.
+	 * @return The polygon parsed from the string
+	 */
+	public static Polygon parseFromString(String s)
+	{
+		String[] verticeStrings = s.split(";");
+		Vector2D[] vertices = new Vector2D[verticeStrings.length];
+		for (int i = 0; i < vertices.length; i++)
+		{
+			vertices[i] = Vector2D.parseFromString(verticeStrings[i]);
+		}
+		
+		return new Polygon(vertices);
 	}
 	
 	private CirculationDirection getCirculationDirectionAt(int startIndex)
