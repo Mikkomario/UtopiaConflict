@@ -1,7 +1,7 @@
 package conflict_test;
 
+import omega_util.Transformation;
 import conflict_collision.CollisionHandler;
-import exodus_util.Transformation;
 import genesis_event.ActorHandler;
 import genesis_event.DrawableHandler;
 import genesis_event.HandlerRelay;

@@ -1,6 +1,6 @@
 package conflict_collision;
 
-import exodus_util.Transformable;
+import omega_util.Transformable;
 import genesis_event.Handled;
 import genesis_util.StateOperator;
 

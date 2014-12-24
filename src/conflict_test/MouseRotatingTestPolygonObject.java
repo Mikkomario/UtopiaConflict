@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 
-import exodus_util.Transformation;
+import omega_util.Transformation;
 import genesis_event.AdvancedMouseEvent;
 import genesis_event.AdvancedMouseListener;
 import genesis_event.EventSelector;
