@@ -5,10 +5,10 @@ import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 
 import omega_util.Transformation;
-import genesis_event.AdvancedMouseEvent;
-import genesis_event.AdvancedMouseListener;
 import genesis_event.EventSelector;
 import genesis_event.HandlerRelay;
+import genesis_event.MouseEvent;
+import genesis_event.MouseListener;
 import genesis_event.StrictEventSelector;
 import genesis_util.StateOperator;
 import genesis_util.Vector2D;
@@ -20,11 +20,11 @@ import genesis_util.Vector2D;
  * @since 9.12.2014
  */
 public class MouseRotatingTestPolygonObject extends TestPolygonObject implements
-		AdvancedMouseListener
+		MouseListener
 {
 	// ATTRIBUTES	-------------------------
 	
-	private StrictEventSelector<AdvancedMouseEvent, AdvancedMouseEvent.Feature> selector;
+	private StrictEventSelector<MouseEvent, MouseEvent.Feature> selector;
 	private Vector2D lastMousePosition;
 	
 	
@@ -41,7 +41,7 @@ public class MouseRotatingTestPolygonObject extends TestPolygonObject implements
 		
 		// Initializes attributes
 		this.selector = new StrictEventSelector<>();
-		this.selector.addRequiredFeature(AdvancedMouseEvent.MouseMovementEventType.OVER);
+		this.selector.addRequiredFeature(MouseEvent.MouseMovementEventType.OVER);
 		this.lastMousePosition = Vector2D.zeroVector();
 	}
 	
@@ -55,7 +55,7 @@ public class MouseRotatingTestPolygonObject extends TestPolygonObject implements
 	}
 
 	@Override
-	public EventSelector<AdvancedMouseEvent> getMouseEventSelector()
+	public EventSelector<MouseEvent> getMouseEventSelector()
 	{
 		return this.selector;
 	}
@@ -73,7 +73,7 @@ public class MouseRotatingTestPolygonObject extends TestPolygonObject implements
 	}
 
 	@Override
-	public void onMouseEvent(AdvancedMouseEvent event)
+	public void onMouseEvent(MouseEvent event)
 	{
 		// Rotates
 		setTrasformation(getTransformation().plus(Transformation.rotationTransformation(

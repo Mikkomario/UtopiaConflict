@@ -1,9 +1,9 @@
 package conflict_test;
 
-import genesis_event.AdvancedMouseEvent;
-import genesis_event.AdvancedMouseListener;
 import genesis_event.EventSelector;
 import genesis_event.HandlerRelay;
+import genesis_event.MouseEvent;
+import genesis_event.MouseListener;
 import genesis_util.StateOperator;
 import genesis_util.Vector2D;
 
@@ -15,12 +15,12 @@ import genesis_util.Vector2D;
  * @since 10.12.2014
  */
 public class TestMousePositionPolygonObject extends TestPolygonObject implements
-		AdvancedMouseListener
+		MouseListener
 {
 	// ATTRIBUTES	-------------------------------
 	
 	private TestPolygonObject other;
-	private EventSelector<AdvancedMouseEvent> selector;
+	private EventSelector<MouseEvent> selector;
 	
 	
 	// CONSTRUCTOR	-------------------------------
@@ -38,7 +38,7 @@ public class TestMousePositionPolygonObject extends TestPolygonObject implements
 		
 		// Intializes attributes
 		this.other = other;
-		this.selector = AdvancedMouseEvent.createMouseMoveSelector();
+		this.selector = MouseEvent.createMouseMoveSelector();
 	}
 	
 	
@@ -51,7 +51,7 @@ public class TestMousePositionPolygonObject extends TestPolygonObject implements
 	}
 
 	@Override
-	public EventSelector<AdvancedMouseEvent> getMouseEventSelector()
+	public EventSelector<MouseEvent> getMouseEventSelector()
 	{
 		return this.selector;
 	}
@@ -63,7 +63,7 @@ public class TestMousePositionPolygonObject extends TestPolygonObject implements
 	}
 
 	@Override
-	public void onMouseEvent(AdvancedMouseEvent event)
+	public void onMouseEvent(MouseEvent event)
 	{
 		// Updates position
 		setTrasformation(getTransformation().withPosition(event.getPosition()));
@@ -71,12 +71,5 @@ public class TestMousePositionPolygonObject extends TestPolygonObject implements
 		if (getPolygon().transformedWith(getTransformation()).collidesWith(
 				this.other.getPolygon().transformedWith(this.other.getTransformation())))
 			System.out.println("Polygons collide");
-			
-		/*
-		if (getPolygon().transformedWith(getTransformation()).overlapsAlongAxis(
-				this.other.getPolygon().transformedWith(this.other.getTransformation()), 
-				new Vector2D(1, 0)))
-			System.out.println("Collide on x-axis");
-			*/
 	}
 }

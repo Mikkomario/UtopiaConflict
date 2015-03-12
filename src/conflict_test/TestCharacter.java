@@ -4,12 +4,12 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 
-import genesis_event.AdvancedKeyEvent;
-import genesis_event.AdvancedKeyEvent.KeyEventType;
-import genesis_event.AdvancedKeyListener;
 import genesis_event.Drawable;
 import genesis_event.EventSelector;
 import genesis_event.HandlerRelay;
+import genesis_event.KeyEvent;
+import genesis_event.KeyEvent.KeyEventType;
+import genesis_event.KeyListener;
 import genesis_util.HelpMath;
 import genesis_util.StateOperator;
 import genesis_util.Vector2D;
@@ -26,13 +26,13 @@ import conflict_collision.CollisionListener;
  * @since 12.3.2015
  */
 public class TestCharacter extends SimpleGameObject implements
-		CollisionListener, Drawable, AdvancedKeyListener
+		CollisionListener, Drawable, KeyListener
 {
 	// ATTRIBUTES	----------------------------
 	
 	private CollisionChecker collisionChecker;
 	private CollisionInformation collisionInformation;
-	private EventSelector<AdvancedKeyEvent> keyEventSelector;
+	private EventSelector<KeyEvent> keyEventSelector;
 	private Transformation transformation;
 	
 	
@@ -52,7 +52,7 @@ public class TestCharacter extends SimpleGameObject implements
 		
 		this.collisionChecker = new CollisionChecker(this, true);
 		this.collisionInformation = new CollisionInformation(vertices);
-		this.keyEventSelector = AdvancedKeyEvent.createEventTypeSelector(KeyEventType.DOWN);
+		this.keyEventSelector = KeyEvent.createEventTypeSelector(KeyEventType.DOWN);
 		this.transformation = new Transformation(position);
 	}
 	
@@ -84,7 +84,7 @@ public class TestCharacter extends SimpleGameObject implements
 	}
 
 	@Override
-	public EventSelector<AdvancedKeyEvent> getKeyEventSelector()
+	public EventSelector<KeyEvent> getKeyEventSelector()
 	{
 		return this.keyEventSelector;
 	}
@@ -96,17 +96,17 @@ public class TestCharacter extends SimpleGameObject implements
 	}
 
 	@Override
-	public void onKeyEvent(AdvancedKeyEvent e)
+	public void onKeyEvent(KeyEvent e)
 	{
 		double rotation = 0, speed = 0;
 		
-		if (e.getKey() == AdvancedKeyEvent.UP)
+		if (e.getKey() == KeyEvent.UP)
 			speed = 5;
-		else if (e.getKey() == AdvancedKeyEvent.DOWN)
+		else if (e.getKey() == KeyEvent.DOWN)
 			speed = -5;
-		else if (e.getKey() == AdvancedKeyEvent.LEFT)
+		else if (e.getKey() == KeyEvent.LEFT)
 			rotation = 3;
-		else if (e.getKey() == AdvancedKeyEvent.RIGTH)
+		else if (e.getKey() == KeyEvent.RIGTH)
 			rotation = -3;
 		
 		Transformation change = null;
@@ -144,12 +144,6 @@ public class TestCharacter extends SimpleGameObject implements
 	public StateOperator getIsVisibleStateOperator()
 	{
 		return getIsActiveStateOperator();
-	}
-
-	@Override
-	public void setDepth(int depth)
-	{
-		// Not possible
 	}
 
 	@Override

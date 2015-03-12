@@ -95,10 +95,4 @@ public class TestWall extends SimpleGameObject implements Collidable, Drawable
 	{
 		return getIsActiveStateOperator();
 	}
-
-	@Override
-	public void setDepth(int depth)
-	{
-		// Not possible at this time
-	}
 }

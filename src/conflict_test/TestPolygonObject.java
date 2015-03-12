@@ -110,12 +110,6 @@ public class TestPolygonObject extends SimpleGameObject implements Transformable
 	}
 
 	@Override
-	public void setDepth(int depth)
-	{
-		// Can't do that
-	}
-
-	@Override
 	public Transformation getTransformation()
 	{
 		return this.transformation;
