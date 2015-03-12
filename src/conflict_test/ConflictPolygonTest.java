@@ -44,7 +44,7 @@ public class ConflictPolygonTest
 		handlers.addHandler(new DrawableHandler(true, false, 0, 1, panel.getDrawer()));
 		handlers.addHandler(new MouseListenerHandler(true, window.getHandlerRelay()));
 		handlers.addHandler(new ActorHandler(true, window.getHandlerRelay()));
-		handlers.addHandler(new CollisionHandler(true, handlers));
+		new CollisionHandler(false, window.getHandlerRelay(), handlers);
 		
 		// Creates polygons
 		TestPolygonObject o = new MouseRotatingTestPolygonObject(5, handlers);

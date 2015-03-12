@@ -1,5 +1,6 @@
 package conflict_collision;
 
+import java.awt.Graphics2D;
 import java.util.List;
 
 import genesis_util.Vector2D;
@@ -101,6 +102,25 @@ public class CollisionInformation
 	
 	
 	// OTHER METHODS	--------------------------
+	
+	/**
+	 * This method draws a line around the collision area specified within this collision 
+	 * information should be used mostly for testing purposes.
+	 * @param g2d The graphics object that will draw the lines
+	 */
+	public void drawCollisionArea(Graphics2D g2d)
+	{
+		if (usesPolygons())
+		{
+			for (Polygon p : getPolygons())
+			{
+				p.drawPolygon(g2d);
+			}
+		}
+		else
+			g2d.drawOval((int) getRadius() / 2, (int) getRadius() / 2, (int) getRadius(), 
+					(int) getRadius());
+	}
 	
 	/**
 	 * Changes the set of classes that can receive collision events when colliding with 

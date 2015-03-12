@@ -630,6 +630,20 @@ public class Polygon
 		return new Polygon(vertices);
 	}
 	
+	/**
+	 * Creates a set of vertices to form a rectangle of the given shape
+	 * @param topLeft The top left corner of the rectangle
+	 * @param bottomRight The bottom right corner of the rectangle
+	 * @return The vertices that form the rectangle
+	 */
+	public static Vector2D[] getRectangleVertices(Vector2D topLeft, Vector2D bottomRight)
+	{
+		Vector2D[] vertices = {topLeft, new Vector2D(topLeft.getFirst(), 
+				bottomRight.getSecond()), bottomRight, new Vector2D(bottomRight.getFirst(), 
+				topLeft.getSecond())};
+		return vertices;
+	}
+	
 	private CirculationDirection getCirculationDirectionAt(int startIndex)
 	{
 		return CirculationDirection.getTurnDirection(getEdge(startIndex + 1).getDirection() - 

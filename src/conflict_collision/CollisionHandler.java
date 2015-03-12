@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import genesis_event.Actor;
+import genesis_event.ActorHandler;
 import genesis_event.Handled;
 import genesis_event.Handler;
 import genesis_event.HandlerRelay;
@@ -30,61 +31,78 @@ public class CollisionHandler extends Handler<CollisionListener> implements Acto
 	
 	// CONSTRUCTOR	---------------------------
 	
-	/*
+	/**
 	 * Creates a new handler
 	 * 
 	 * @param autoDeath Will the handler die once it runs out of listeners
-	 * @param actorHandler The actorHandler that will inform the handler about step events
+	 * @param superHandler The actorHandler that will inform the handler about step events
+	 * @param relay The relay the collisionHandler and the respective collidableHandler will 
+	 * be added to (optional)
 	 */
-	/*
-	public CollisionHandler(boolean autoDeath, ActorHandler actorHandler)
+	public CollisionHandler(boolean autoDeath, ActorHandler superHandler, HandlerRelay relay)
 	{
 		super(autoDeath);
 		
 		// Initializes attributes
-		this.collidableHandler = new CollidableHandler(this);
+		this.collidableHandler = new CollidableHandler();
 		this.isActiveOperator = new AnyListenerIsActiveOperator();
 		this.previousListeners = new ArrayList<>();
 		
-		if (actorHandler != null)
-			actorHandler.add(this);
+		if (superHandler != null)
+			superHandler.add(this);
+		if (relay != null)
+		{
+			relay.addHandler(this);
+			relay.addHandler(getCollidableHandler());
+		}
 	}
-	*/
 	
 	/**
 	 * Creates a new handler
 	 * 
 	 * @param autoDeath Will the handler die once it runs out of listeners
-	 * @param superHandlers The handlers that will handle this handler
+	 * @param superHandlers The handlers that will handle this handler (actorHandler required)
+	 * @param relay The relay the collisionHandler and the respective collidableHandler will 
+	 * be added to (optional)
 	 */
-	public CollisionHandler(boolean autoDeath, HandlerRelay superHandlers)
+	public CollisionHandler(boolean autoDeath, HandlerRelay superHandlers, HandlerRelay relay)
 	{
 		super(autoDeath, superHandlers);
 		
 		// Initializes attributes
-		this.collidableHandler = new CollidableHandler(this);
+		this.collidableHandler = new CollidableHandler();
 		this.isActiveOperator = new AnyListenerIsActiveOperator();
 		this.previousListeners = new ArrayList<>();
 		
-		superHandlers.addHandler(this.collidableHandler);
+		if (relay != null)
+		{
+			relay.addHandler(this);
+			relay.addHandler(getCollidableHandler());
+		}
 	}
 	
-	/*
+	/**
 	 * Creates a new handler. The handler must be added to an actorHandler manually.
 	 * 
 	 * @param autoDeath Will the handler die once it runs out of handleds.
+	 * @param relay The relay the collisionHandler and the respective collidableHandler will 
+	 * be added to (optional)
 	 */
-	/*
-	public CollisionHandler(boolean autoDeath)
+	public CollisionHandler(boolean autoDeath, HandlerRelay relay)
 	{
 		super(autoDeath);
 		
 		// Initializes attributes
-		this.collidableHandler = new CollidableHandler(this);
+		this.collidableHandler = new CollidableHandler();
 		this.isActiveOperator = new AnyListenerIsActiveOperator();
 		this.previousListeners = new ArrayList<>();
+		
+		if (relay != null)
+		{
+			relay.addHandler(this);
+			relay.addHandler(getCollidableHandler());
+		}
 	}
-	*/
 	
 	
 	// IMPLEMENTED METHODS	--------------------
@@ -230,23 +248,27 @@ public class CollisionHandler extends Handler<CollisionListener> implements Acto
 	
 	// SUBCLASSES	----------------------------
 	
-	private static class CollidableHandler extends Handler<Collidable>
+	/**
+	 * CollidableHandler keeps track of all the collidables that can collide with the 
+	 * collision listeners
+	 * @author Mikko Hilpinen
+	 * @since 12.3.2015
+	 */
+	public class CollidableHandler extends Handler<Collidable>
 	{
 		// ATTRIBUTES	-----------------------------
 		
 		private CollisionListener lastListener;
 		private double lastDuration;
-		private CollisionHandler masterHandler;
 		
 		
 		// CONSTRUCTOR	-----------------------------
 		
-		public CollidableHandler(CollisionHandler masterHandler)
+		private CollidableHandler()
 		{
 			super(false);
 			
-			this.masterHandler = masterHandler;
-			this.masterHandler.getIsDeadStateOperator().getListenerHandler().add(this);
+			CollisionHandler.this.getIsDeadStateOperator().getListenerHandler().add(this);
 		}
 		
 		
@@ -293,7 +315,7 @@ public class CollisionHandler extends Handler<CollisionListener> implements Acto
 			super.onStateChange(source, newState);
 			
 			// In addition to the normal state checking, dies if the collision handler dies
-			if (source == this.masterHandler.getIsDeadStateOperator() && newState)
+			if (source == CollisionHandler.this.getIsDeadStateOperator() && newState)
 				getIsDeadStateOperator().setState(true);
 		}
 		
@@ -302,7 +324,7 @@ public class CollisionHandler extends Handler<CollisionListener> implements Acto
 		{
 			// Doesn't accept collisionListeners
 			if (c instanceof CollisionListener)
-				this.masterHandler.add(c);
+				CollisionHandler.this.add(c);
 			else
 				super.add(c);
 		}
@@ -310,7 +332,7 @@ public class CollisionHandler extends Handler<CollisionListener> implements Acto
 		
 		// OTHER METHODS	------------------------
 		
-		public void checkForCollisionsWith(CollisionListener listener, double duration)
+		private void checkForCollisionsWith(CollisionListener listener, double duration)
 		{
 			this.lastDuration = duration;
 			this.lastListener = listener;
