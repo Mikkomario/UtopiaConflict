@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import conflict_util.Polygon;
+import genesis_util.HelpMath;
 import genesis_util.Vector2D;
 
 /**
@@ -102,6 +103,11 @@ public class CollisionChecker
 		if (calculateCollisionPoints)
 			calculateMtv = true;
 		
+		// The check is a bit different if polygons are not supported
+		if (!this.user.getCollisionInformation().usesPolygons() || 
+				!other.getCollisionInformation().usesPolygons())
+			return checkCircleCollision(other, calculateMtv, calculateCollisionPoints);
+		
 		// Checks if there are collisions between any of the polygons
 		for (Polygon thisPolygon : getAbsolutePolygons(this.user))
 		{
@@ -173,6 +179,41 @@ public class CollisionChecker
 			polygons.add(polygon.transformedWith(c.getTransformation()));
 		}
 		return polygons;
+	}
+	
+	private CollisionData checkCircleCollision(Collidable other, boolean calculateMtv, 
+			boolean calculateCollisionPoints)
+	{
+		Vector2D origin1 = this.user.getTransformation().getPosition();
+		Vector2D origin2 = other.getTransformation().getPosition();
+		double d = HelpMath.pointDistance(origin1, origin2);
+		double r1 = this.user.getCollisionInformation().getRadius();
+		double r2 = other.getCollisionInformation().getRadius();
+		double minimumDistance = r1 + r2;
+		
+		// Checks for the collision
+		boolean collides = (d < minimumDistance);
+		
+		if (!collides)
+			return new CollisionData(false, null, null);
+		
+		// May collect extra data
+		Vector2D mtv = null;
+		List<Vector2D> collisionPoints = null;
+		if (calculateMtv)
+		{
+			double overlap = d - minimumDistance;
+			mtv = origin2.minus(origin1).withLength(overlap);
+			
+			if (calculateCollisionPoints)
+			{
+				collisionPoints = new ArrayList<>();
+				collisionPoints.add(origin1.plus(mtv.reverse().withLength(r1)));
+				collisionPoints.add(origin2.plus(mtv.withLength(r2)));
+			}
+		}
+		
+		return new CollisionData(collides, mtv, collisionPoints);
 	}
 	
 	

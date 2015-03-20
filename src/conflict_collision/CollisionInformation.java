@@ -85,6 +85,15 @@ public class CollisionInformation
 	}
 	
 	/**
+	 * Changes the object's collision radius
+	 * @param newRadius The new collision radius
+	 */
+	public void setRadius(double newRadius)
+	{
+		this.radius = newRadius;
+	}
+	
+	/**
 	 * @return The object's collision polygons
 	 */
 	public List<Polygon> getPolygons()

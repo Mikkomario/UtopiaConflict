@@ -137,6 +137,11 @@ public class TestCharacter extends SimpleGameObject implements
 			AffineTransform last = g2d.getTransform();
 			getTransformation().transform(g2d);
 			getCollisionInformation().drawCollisionArea(g2d);
+			
+			g2d.setColor(Color.GRAY);
+			int r = (int) getCollisionInformation().getRadius();
+			g2d.drawOval(-r, -r, r * 2, r * 2);
+			
 			g2d.setColor(Color.RED);
 			
 			g2d.setTransform(last);

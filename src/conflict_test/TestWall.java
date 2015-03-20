@@ -81,6 +81,11 @@ public class TestWall extends SimpleGameObject implements Collidable, Drawable
 		AffineTransform last = g2d.getTransform();
 		getTransformation().transform(g2d);
 		getCollisionInformation().drawCollisionArea(g2d);
+		
+		g2d.setColor(Color.GRAY);
+		int r = (int) getCollisionInformation().getRadius();
+		g2d.drawOval(-r, -r, r * 2, r * 2);
+		
 		g2d.setTransform(last);
 	}
 

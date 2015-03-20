@@ -290,6 +290,9 @@ public class CollisionHandler extends Handler<CollisionListener> implements Acto
 		@Override
 		protected boolean handleObject(Collidable h)
 		{
+			if (h == null || h.getCanBeCollidedWithStateOperator() == null)
+				return true;
+			
 			// Checks if the two objects accept each other as collided objects (= is collision 
 			// checking necessary)
 			if (!h.getCanBeCollidedWithStateOperator().getState())
