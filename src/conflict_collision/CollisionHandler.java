@@ -3,6 +3,7 @@ package conflict_collision;
 import java.util.ArrayList;
 import java.util.List;
 
+import conflict_collision.CollisionChecker.CollisionData;
 import genesis_event.Actor;
 import genesis_event.ActorHandler;
 import genesis_event.Handled;
@@ -10,7 +11,6 @@ import genesis_event.Handler;
 import genesis_event.HandlerRelay;
 import genesis_event.HandlerType;
 import genesis_util.StateOperator;
-import genesis_util.Vector2D;
 
 /**
  * CollisionHandlers inform collision listeners about collision events. They also keep track 
@@ -154,24 +154,31 @@ public class CollisionHandler extends Handler<CollisionListener> implements Acto
 				if (!currentIsInterested && !previousIsInterested)
 					continue;
 				
-				CollisionEvent event = null;
-				
-				// Checks if either of the listeners wants to use the mtv
-				if ((currentIsInterested && h.getCollisionChecker().mtvShouldBeCalculated()) || 
+				// Checks what information the listeners want to receive
+				boolean mtvRequired = false;
+				boolean pointsRequired = false;
+				if ((currentIsInterested && 
+						h.getCollisionChecker().collisionPointsShouldBeCalculated()) || 
+						(previousIsInterested && 
+						previousListener.getCollisionChecker().collisionPointsShouldBeCalculated()))
+				{
+					mtvRequired = true;
+					pointsRequired = true;
+				}
+				else if ((currentIsInterested && h.getCollisionChecker().mtvShouldBeCalculated()) || 
 						(previousIsInterested && 
 						previousListener.getCollisionChecker().mtvShouldBeCalculated()))
-				{
-					Vector2D mtv = h.getCollisionChecker().objectCollidesMTV(previousListener);
-					
-					if (mtv != null)
-						event = new CollisionEvent(h, previousListener, mtv, this.lastDuration);
-				}
-				else if (h.getCollisionChecker().objectCollides(previousListener))
-					event = new CollisionEvent(h, previousListener, null, this.lastDuration);
+					mtvRequired = true;
 				
+				// Checks for collisions
+				CollisionData data = h.getCollisionChecker().checkForCollisionsWith(
+						previousListener, mtvRequired, pointsRequired);
 				// If there was a collision informs the interested participants
-				if (event != null)
+				if (data.collided())
 				{
+					CollisionEvent event = new CollisionEvent(h, previousListener, data, 
+							this.lastDuration);
+				
 					if (currentIsInterested)
 						h.onCollisionEvent(event);
 					if (previousIsInterested)
@@ -292,19 +299,26 @@ public class CollisionHandler extends Handler<CollisionListener> implements Acto
 					!this.lastListener.getCollisionChecker().isInterestedInCollisionsWith(h))
 				return true;
 			
-			// Checks for collisions between the collidable and the collision listener
-			// Calculates the mtv if necessary
-			if (this.lastListener.getCollisionChecker().mtvShouldBeCalculated())
+			// Checks which data should be collected
+			boolean mtvRequired = false;
+			boolean pointsRequired = false;
+			if (this.lastListener.getCollisionChecker().collisionPointsShouldBeCalculated())
 			{
-				Vector2D mtv = this.lastListener.getCollisionChecker().objectCollidesMTV(h);
-				
-				if (mtv != null)
-					this.lastListener.onCollisionEvent(
-							new CollisionEvent(this.lastListener, h, mtv, this.lastDuration));
+				mtvRequired = true;
+				pointsRequired = true;
 			}
-			else if (this.lastListener.getCollisionChecker().objectCollides(h))
+			else if (this.lastListener.getCollisionChecker().mtvShouldBeCalculated())
+				mtvRequired = true;
+			
+			// Checks for collisions between the collidable and the collision listener
+			CollisionData data = 
+					this.lastListener.getCollisionChecker().checkForCollisionsWith(h, 
+					mtvRequired, pointsRequired);
+			
+			// If there was a collision, informs the listener
+			if (data.collided())
 				this.lastListener.onCollisionEvent(new CollisionEvent(this.lastListener, h, 
-						null, this.lastDuration));
+						data, this.lastDuration));
 			
 			return true;
 		}

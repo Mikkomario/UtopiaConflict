@@ -3,6 +3,8 @@ package conflict_test;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
+import java.util.ArrayList;
+import java.util.List;
 
 import genesis_event.Drawable;
 import genesis_event.EventSelector;
@@ -11,6 +13,7 @@ import genesis_event.KeyEvent;
 import genesis_event.KeyEvent.KeyEventType;
 import genesis_event.KeyListener;
 import genesis_util.HelpMath;
+import genesis_util.Line;
 import genesis_util.StateOperator;
 import genesis_util.Vector2D;
 import omega_util.SimpleGameObject;
@@ -34,6 +37,8 @@ public class TestCharacter extends SimpleGameObject implements
 	private CollisionInformation collisionInformation;
 	private EventSelector<KeyEvent> keyEventSelector;
 	private Transformation transformation;
+	private List<Vector2D> lastCollisionPoints;
+	private Line lastEdge;
 	
 	
 	// CONSTRUCTOR	----------------------------
@@ -50,10 +55,12 @@ public class TestCharacter extends SimpleGameObject implements
 		Vector2D[] vertices = {new Vector2D(30, 0), new Vector2D(-20, -20), 
 				new Vector2D(-20, 20)};
 		
-		this.collisionChecker = new CollisionChecker(this, true);
+		this.collisionChecker = new CollisionChecker(this, true, true);
 		this.collisionInformation = new CollisionInformation(vertices);
 		this.keyEventSelector = KeyEvent.createEventTypeSelector(KeyEventType.DOWN);
 		this.transformation = new Transformation(position);
+		this.lastCollisionPoints = new ArrayList<>();
+		this.lastEdge = new Line(Vector2D.zeroVector());
 	}
 	
 	
@@ -130,7 +137,16 @@ public class TestCharacter extends SimpleGameObject implements
 			AffineTransform last = g2d.getTransform();
 			getTransformation().transform(g2d);
 			getCollisionInformation().drawCollisionArea(g2d);
+			g2d.setColor(Color.RED);
+			
 			g2d.setTransform(last);
+			
+			this.lastEdge.draw(g2d);
+			for (Vector2D lastCollisionPosition : this.lastCollisionPoints)
+			{
+				g2d.drawOval(lastCollisionPosition.getFirstInt() - 2, 
+						lastCollisionPosition.getSecondInt() - 2, 4, 4);
+			}
 		}
 	}
 
@@ -155,9 +171,24 @@ public class TestCharacter extends SimpleGameObject implements
 	@Override
 	public void onCollisionEvent(CollisionEvent event)
 	{
+		//if (event.getMTV().equals(Vector2D.zeroVector()))
+		//	return;
+		
 		// Makes sure the event is from the right perspective
 		if (!event.getListener().equals(this))
 			event = event.fromTargetsPointOfView();
+		
+		// Calculates the collision point
+		//this.lastEdge = CollisionChecker.getCollisionEdge(getCollisionInformation().getPolygons().get(0).transformedWith(getTransformation()), event.getMTV());
+		/*
+		this.lastCollisionPoints = CollisionChecker.getCollisionPoints(
+				getCollisionInformation().getPolygons().get(0).transformedWith(
+				getTransformation()), 
+				event.getTarget().getCollisionInformation().getPolygons().get(0).transformedWith(
+				event.getTarget().getTransformation()), event.getMTV());
+		*/
+		this.lastCollisionPoints = event.getCollisionPoints();
+		//System.out.println(this.lastCollisionPoints.size());
 		
 		// Bounces away from the target
 		setTrasformation(getTransformation().plus(

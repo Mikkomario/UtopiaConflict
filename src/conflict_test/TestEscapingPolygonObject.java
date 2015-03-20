@@ -37,7 +37,7 @@ public class TestEscapingPolygonObject extends TestPolygonObject implements Coll
 				handlers.containsHandlerOfType(GenesisHandlerType.ACTORHANDLER));
 		
 		// Initializes attributes
-		this.collisionChecker = new CollisionChecker(this, true);
+		this.collisionChecker = new CollisionChecker(this, true, false);
 		Class<?>[] interestingClasses = {TestPolygonObject.class};
 		this.collisionChecker.limitCheckedClassesTo(interestingClasses);
 	}

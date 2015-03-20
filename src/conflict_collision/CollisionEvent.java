@@ -1,5 +1,8 @@
 package conflict_collision;
 
+import java.util.List;
+
+import conflict_collision.CollisionChecker.CollisionData;
 import genesis_util.Vector2D;
 
 /**
@@ -16,6 +19,7 @@ public class CollisionEvent
 	private Collidable listener, target;
 	private Vector2D mtv;
 	private double duration;
+	private List<Vector2D> collisionPoints;
 	
 	
 	// CONSTRUCTOR	--------------------------
@@ -30,16 +34,40 @@ public class CollisionEvent
 	 * collision. This is only provided if either the listener or the target desires it. 
 	 * The mtv is presented from the listener's point of view. mtv.reverse() would return the 
 	 * target's point of view.
+	 * @param collisionPoints The point(s) where the collision occurred
 	 * @param duration How long the collision event took place (the amount of steps since the 
 	 * last check)
 	 */
-	public CollisionEvent(Collidable listener, Collidable target, Vector2D mtv, double duration)
+	public CollisionEvent(Collidable listener, Collidable target, Vector2D mtv, 
+			List<Vector2D> collisionPoints, double duration)
 	{
 		// Initializes attributes
 		this.listener = listener;
 		this.target = target;
 		this.mtv = mtv;
 		this.duration = duration;
+		this.collisionPoints = collisionPoints;
+	}
+	
+	/**
+	 * Creates a new event with the given data
+	 * @param listener The primary listener of the event. The data should be presented from 
+	 * the listener's point of view.
+	 * @param target The object the listener collided with. This object may also be interested 
+	 * in the event.
+	 * @param collisionData The collision data collected during the collision check operation
+	 * @param duration How long the collision event took place (the amount of steps since the 
+	 * last check)
+	 */
+	public CollisionEvent(Collidable listener, Collidable target, 
+			CollisionData collisionData, double duration)
+	{
+		// Initializes attributes
+		this.listener = listener;
+		this.target = target;
+		this.mtv = collisionData.getMtv();
+		this.duration = duration;
+		this.collisionPoints = collisionData.getCollisionPoints();
 	}
 	
 	
@@ -62,7 +90,8 @@ public class CollisionEvent
 	}
 	
 	/**
-	 * @return The minimum translation vector from the listener's point of view
+	 * @return The minimum translation vector from the listener's point of view. May be null 
+	 * if the mtv was not requested.
 	 */
 	public Vector2D getMTV()
 	{
@@ -75,6 +104,15 @@ public class CollisionEvent
 	public double getDuration()
 	{
 		return this.duration;
+	}
+	
+	/**
+	 * @return The points where the collision occurred (absolute). May be null if the collision 
+	 * points were not requested.
+	 */
+	public List<Vector2D> getCollisionPoints()
+	{
+		return this.collisionPoints;
 	}
 	
 	
@@ -134,6 +172,7 @@ public class CollisionEvent
 	public CollisionEvent fromTargetsPointOfView()
 	{
 		return new CollisionEvent(getTarget(), getListener(), 
-				getMTV() == null ? null : getMTV().reverse(), getDuration());
+				getMTV() == null ? null : getMTV().reverse(), getCollisionPoints(), 
+				getDuration());
 	}
 }

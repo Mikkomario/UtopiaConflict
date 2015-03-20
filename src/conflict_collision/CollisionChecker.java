@@ -1,6 +1,7 @@
 package conflict_collision;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import conflict_util.Polygon;
 import genesis_util.Vector2D;
@@ -17,7 +18,7 @@ public class CollisionChecker
 	// ATTRIBUTES	-----------------------
 	
 	private Collidable user;
-	private boolean userWantsMTV;
+	private boolean userWantsMTV, userWantsPoints;
 	private Class<?>[] interestingClasses;
 	
 	
@@ -29,13 +30,15 @@ public class CollisionChecker
 	 * @param mtvWanted Does the user want the minimum translation vector (MTV) to be 
 	 * calculated when checking collisions with other objects. The value can be used later 
 	 * but is slightly more taxing to calculate.
+	 * @param collisionPointWanted Does the user want the collision points to be calculated.
 	 */
-	public CollisionChecker(Collidable user, boolean mtvWanted)
+	public CollisionChecker(Collidable user, boolean mtvWanted, boolean collisionPointWanted)
 	{
 		// Initializes attributes
 		this.user = user;
-		this.userWantsMTV = mtvWanted;
+		this.userWantsMTV = mtvWanted || collisionPointWanted;
 		this.interestingClasses = null;
+		this.userWantsPoints = collisionPointWanted;
 	}
 	
 	
@@ -49,15 +52,14 @@ public class CollisionChecker
 		return this.userWantsMTV;
 	}
 	
-	/*
-	 * @return The collidable object the collisions are checked with
+	/**
+	 * @return Should the collision points be calculated when dealing with this collision 
+	 * checker.
 	 */
-	/*
-	public Collidable getUserObject()
+	public boolean collisionPointsShouldBeCalculated()
 	{
-		return this.user;
+		return this.userWantsPoints;
 	}
-	*/
 	
 	
 	// OTHER METHODS	-------------------
@@ -86,47 +88,50 @@ public class CollisionChecker
 	}
 	
 	/**
-	 * Checks if the two objects collide with each other
-	 * @param other The other object that may collide with this one
-	 * @return Do the two objects collide with each other
-	 */
-	public boolean objectCollides(Collidable other)
-	{	
-		// Checks if there are collisions between any of the polygons
-		for (Polygon thisPolygon : getAbsolutePolygons(this.user))
-		{
-			for (Polygon otherPolygon : getAbsolutePolygons(other))
-			{
-				if (thisPolygon.collidesWith(otherPolygon))
-					return true;
-			}
-		}
-		
-		return false;
-	}
-	
-	/**
-	 * Checks if the two objects collide with each other and returns the minimal 
-	 * translation vector (MTV) for the object used by this checker
+	 * Checks if the two objects collide with each other and returns the collected data
 	 * @param other The object the collisions are checked with
-	 * @return The minimum translation vector from the point of view of this checker's object. 
-	 * Null if there is no collision.
+	 * @param calculateMtv In case of a collision, should the minimum translation vector be 
+	 * calculated.
+	 * @param calculateCollisionPoints In case of a collision, should the collision points be 
+	 * calculated
+	 * @return The data collected during the collision check
 	 */
-	public Vector2D objectCollidesMTV(Collidable other)
+	public CollisionData checkForCollisionsWith(Collidable other, boolean calculateMtv, 
+			boolean calculateCollisionPoints)
 	{
+		if (calculateCollisionPoints)
+			calculateMtv = true;
+		
 		// Checks if there are collisions between any of the polygons
 		for (Polygon thisPolygon : getAbsolutePolygons(this.user))
 		{
 			for (Polygon otherPolygon : getAbsolutePolygons(other))
 			{
-				Vector2D mtv = thisPolygon.collidesWithMTV(otherPolygon);
+				// Calculates the mtv only if necessary
+				Vector2D mtv = null;
+				if (calculateMtv)
+					mtv = thisPolygon.collidesWithMTV(otherPolygon);
 				
-				if (mtv != null)
-					return mtv;
+				// Checks if there was a collision
+				boolean collided = (mtv != null && !mtv.equals(Vector2D.zeroVector()));
+				if (!calculateMtv)
+					collided = thisPolygon.collidesWith(otherPolygon);
+				
+				// On collision, may calculate points and return the data, otherwise moves 
+				// forward
+				if (collided)
+				{
+					List<Vector2D> collisionPoints = null;
+					if (calculateCollisionPoints)
+						collisionPoints = Polygon.getCollisionPoints(thisPolygon, 
+								otherPolygon, mtv);
+					
+					return new CollisionData(collided, mtv, collisionPoints);
+				}
 			}
 		}
 		
-		return null;
+		return new CollisionData(false, null, null);
 	}
 	
 	/**
@@ -168,5 +173,66 @@ public class CollisionChecker
 			polygons.add(polygon.transformedWith(c.getTransformation()));
 		}
 		return polygons;
+	}
+	
+	
+	// SUBCLASSES	---------------------------------
+	
+	/**
+	 * CollisionData is a simple structure that holds the basic data collected during a 
+	 * collision check
+	 * @author Mikko Hilpinen
+	 * @since 20.3.2015
+	 */
+	public static class CollisionData
+	{
+		// ATTRIBUTES	-----------------------------
+		
+		private boolean collides;
+		private Vector2D mtv;
+		private List<Vector2D> collisionPoints;
+		
+		
+		// CONSTRUCTOR	-----------------------------
+		
+		/**
+		 * Creates a new collisionData that holds information about the collision
+		 * @param collides Did a collision occur or not
+		 * @param mtv The minimum translation vector calculated during the operation
+		 * @param collisionPoints The collision points calculated during the operation
+		 */
+		public CollisionData(boolean collides, Vector2D mtv, List<Vector2D> collisionPoints)
+		{
+			this.collides = collides;
+			this.mtv = mtv;
+			this.collisionPoints = collisionPoints;
+		}
+		
+		
+		// GETTERS & SETTERS	---------------------
+		
+		/**
+		 * @return Was there a collision of some sort
+		 */
+		public boolean collided()
+		{
+			return this.collides;
+		}
+		
+		/**
+		 * @return The minimum translation vector calculated during the check
+		 */
+		public Vector2D getMtv()
+		{
+			return this.mtv;
+		}
+		
+		/**
+		 * @return The collision points calculated during the check
+		 */
+		public List<Vector2D> getCollisionPoints()
+		{
+			return this.collisionPoints;
+		}
 	}
 }

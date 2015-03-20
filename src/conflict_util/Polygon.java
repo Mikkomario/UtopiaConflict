@@ -84,6 +84,138 @@ public class Polygon
 	// OTHER METHODS	----------------------
 	
 	/**
+	 * Finds the edge that took part of a collision
+	 * @param p The polygon the edge is from
+	 * @param mtv The collision normal. The vector must point towards the polygon, not away 
+	 * from it
+	 * @return The polygon's edge that collided
+	 */
+	public static Line getCollisionEdge(Polygon p, Vector2D mtv)
+	{
+		Vector2D bestVertex = null;
+		double bestProduct = 0;
+		int bestIndex = -1;
+		
+		// Goes through all the vertices and finds the closest one
+		for (int i = 0; i < p.getVertexAmount(); i++)
+		{
+			Vector2D v = p.getVertex(i);
+			double product = v.dotProduct(mtv);
+			
+			// The best vertex has the smallest dot product with the collision normal
+			if (bestVertex == null || product < bestProduct)
+			{
+				bestVertex = v;
+				bestProduct = product;
+				bestIndex = i;
+			}
+		}
+		
+		// Finds the better edge that is connected to the vertex
+		Line left = new Line(bestVertex, p.getVertex(bestIndex - 1));
+		Line right = new Line(bestVertex, p.getVertex(bestIndex + 1));
+		
+		// The better edge is more perpendicular to the collision normal
+		if (Math.abs(left.toVector().dotProduct(mtv)) < 
+				Math.abs(right.toVector().dotProduct(mtv)))
+			return left;
+		else
+			return right;
+	}
+	
+	/**
+	 * Calculates the collision points between the two polygons
+	 * @param p1 The first polygon
+	 * @param p2 The second polygon
+	 * @param mtv1 The minimum translation vector for the first polygon (points towards 
+	 * the first polygon)
+	 * @return A list of collision points. There will be one or two collision points.
+	 */
+	public static List<Vector2D> getCollisionPoints(Polygon p1, Polygon p2, Vector2D mtv1)
+	{
+		Vector2D mtv2 = mtv1.reverse();
+		Line edge1 = getCollisionEdge(p1, mtv1);
+		Line edge2 = getCollisionEdge(p2, mtv2);
+		
+		Line referenceEdge = edge1;
+		Line incidentEdge = edge2;
+		Vector2D referenceMtv = mtv1;
+		
+		// The reference edge is the one that is more perpendicular to the collision normal
+		if (Math.abs(edge2.toVector().dotProduct(mtv1)) < 
+				Math.abs(edge1.toVector().dotProduct(mtv1)))
+		{
+			referenceEdge = edge2;
+			incidentEdge = edge1;
+			referenceMtv = mtv2;
+		}
+		
+		return clip(referenceEdge, incidentEdge, referenceMtv);
+	}
+	
+	private static List<Vector2D> clip(Line reference, Line incident, Vector2D referenceMtv)
+	{
+		// Clips from both sides
+		Line clipped = getClippedEdge(incident, reference.getStart(), reference.toVector());
+		if (clipped == null)
+			return new ArrayList<>();
+		
+		clipped = getClippedEdge(clipped, reference.getEnd(), reference.toVector().reverse());
+		if (clipped == null)
+			return new ArrayList<>();
+		
+		// Removes the edges from outside the third side
+		Vector2D lastNormal = reference.toVector().normal();
+		if (!HelpMath.areApproximatelyEqual(lastNormal.getDirection(), 
+				referenceMtv.getDirection()))
+			lastNormal = referenceMtv;
+		
+		List<Vector2D> collisionPoints = new ArrayList<>();
+		
+		double origin = reference.getStart().dotProduct(lastNormal);
+		double distance1 = clipped.getStart().dotProduct(lastNormal) - origin;
+		double distance2 = clipped.getEnd().dotProduct(lastNormal) - origin;
+		
+		if (distance1 >= 0)
+			collisionPoints.add(clipped.getStart());
+		if (distance2 >= 0)
+			collisionPoints.add(clipped.getEnd());
+		
+		return collisionPoints;
+	}
+	
+	private static Line getClippedEdge(Line edge, Vector2D edgePoint, 
+			Vector2D clippingPlaneNormal)
+	{
+		double origin = edgePoint.dotProduct(clippingPlaneNormal);
+		
+		double distance1 = edge.getStart().dotProduct(clippingPlaneNormal) - origin;
+		double distance2 = edge.getEnd().dotProduct(clippingPlaneNormal) - origin;
+		
+		List<Vector2D> clippedPoints = new ArrayList<>();
+		
+		// If the vertices are inside the desired area, preserves them
+		if (distance1 >= 0)
+			clippedPoints.add(edge.getStart());
+		if (distance2 >= 0)
+			clippedPoints.add(edge.getEnd());
+		
+		// If one of them wasn't, clips the edge
+		if (distance1 * distance2 < 0)
+		{
+			Vector2D edgeVector = edge.toVector();
+			double u = distance1 / (distance1 - distance2);
+			edgeVector = edgeVector.times(u).plus(edge.getStart());
+			clippedPoints.add(edgeVector);
+		}
+		
+		if (clippedPoints.size() >= 2)
+			return new Line(clippedPoints.get(0), clippedPoints.get(1));
+		else
+			return null;
+	}
+	
+	/**
 	 * @return How many vertexes does this polygon have
 	 */
 	public int getVertexAmount()
@@ -98,6 +230,9 @@ public class Polygon
 	 */
 	public Vector2D getVertex(int index)
 	{
+		while (index < 0)
+			index += getVertexAmount();
+		
 		return this.vertices[index % getVertexAmount()];
 	}
 	
