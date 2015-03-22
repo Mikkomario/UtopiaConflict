@@ -7,7 +7,7 @@ import conflict_collision.CollisionListener;
 import genesis_event.GenesisHandlerType;
 import genesis_event.HandlerRelay;
 import genesis_util.StateOperator;
-import genesis_util.Vector2D;
+import genesis_util.Vector3D;
 
 /**
  * This polygon tries to get outside a polygon
@@ -57,7 +57,7 @@ public class TestEscapingPolygonObject extends TestPolygonObject implements Coll
 		if (event.isTarget(this))
 			event = event.fromTargetsPointOfView();
 		
-		Vector2D movement = event.getMTV();
+		Vector3D movement = event.getMTV();
 		
 		if (event.getTarget() instanceof TestEscapingPolygonObject)
 			movement = movement.times(0.5);

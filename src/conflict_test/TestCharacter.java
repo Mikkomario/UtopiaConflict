@@ -15,7 +15,7 @@ import genesis_event.KeyListener;
 import genesis_util.HelpMath;
 import genesis_util.Line;
 import genesis_util.StateOperator;
-import genesis_util.Vector2D;
+import genesis_util.Vector3D;
 import omega_util.SimpleGameObject;
 import omega_util.Transformation;
 import conflict_collision.CollisionChecker;
@@ -37,7 +37,7 @@ public class TestCharacter extends SimpleGameObject implements
 	private CollisionInformation collisionInformation;
 	private EventSelector<KeyEvent> keyEventSelector;
 	private Transformation transformation;
-	private List<Vector2D> lastCollisionPoints;
+	private List<Vector3D> lastCollisionPoints;
 	private Line lastEdge;
 	
 	
@@ -48,19 +48,19 @@ public class TestCharacter extends SimpleGameObject implements
 	 * @param handlers The handlers that will handle the character
 	 * @param position The new position of the character
 	 */
-	public TestCharacter(HandlerRelay handlers, Vector2D position)
+	public TestCharacter(HandlerRelay handlers, Vector3D position)
 	{
 		super(handlers);
 		
-		Vector2D[] vertices = {new Vector2D(30, 0), new Vector2D(-20, -20), 
-				new Vector2D(-20, 20)};
+		Vector3D[] vertices = {new Vector3D(30, 0), new Vector3D(-20, -20), 
+				new Vector3D(-20, 20)};
 		
 		this.collisionChecker = new CollisionChecker(this, true, true);
 		this.collisionInformation = new CollisionInformation(vertices);
 		this.keyEventSelector = KeyEvent.createEventTypeSelector(KeyEventType.DOWN);
 		this.transformation = new Transformation(position);
 		this.lastCollisionPoints = new ArrayList<>();
-		this.lastEdge = new Line(Vector2D.zeroVector());
+		this.lastEdge = new Line(Vector3D.zeroVector());
 	}
 	
 	
@@ -121,7 +121,7 @@ public class TestCharacter extends SimpleGameObject implements
 		if (!HelpMath.areApproximatelyEqual(rotation, 0))
 			change = Transformation.rotationTransformation(rotation);
 		else if (!HelpMath.areApproximatelyEqual(speed, 0))
-			change = Transformation.transitionTransformation(Vector2D.unitVector(
+			change = Transformation.transitionTransformation(Vector3D.unitVector(
 					getTransformation().getAngle()).times(speed));
 		
 		if (change != null)
@@ -147,7 +147,7 @@ public class TestCharacter extends SimpleGameObject implements
 			g2d.setTransform(last);
 			
 			this.lastEdge.draw(g2d);
-			for (Vector2D lastCollisionPosition : this.lastCollisionPoints)
+			for (Vector3D lastCollisionPosition : this.lastCollisionPoints)
 			{
 				g2d.drawOval(lastCollisionPosition.getFirstInt() - 2, 
 						lastCollisionPosition.getSecondInt() - 2, 4, 4);
@@ -176,7 +176,7 @@ public class TestCharacter extends SimpleGameObject implements
 	@Override
 	public void onCollisionEvent(CollisionEvent event)
 	{
-		//if (event.getMTV().equals(Vector2D.zeroVector()))
+		//if (event.getMTV().equals(Vector3D.zeroVector()))
 		//	return;
 		
 		// Makes sure the event is from the right perspective

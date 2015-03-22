@@ -7,7 +7,7 @@ import java.util.Random;
 import omega_util.Transformation;
 import conflict_util.Polygon;
 import genesis_event.HandlerRelay;
-import genesis_util.Vector2D;
+import genesis_util.Vector3D;
 
 /**
  * This class is able to produce a set of convex polygons from a random set of vertices. This 
@@ -36,15 +36,15 @@ public class RandomConvexPolygonFactory
 	 * @return A list containing all the objects that were just created
 	 */
 	public static ArrayList<TestPolygonObject> createPolygons(HandlerRelay handlers, 
-			int vertexAmount, Vector2D position)
+			int vertexAmount, Vector3D position)
 	{
 		// Creates the first polygon and the splits it
-		Vector2D[] vertices = new Vector2D[vertexAmount];
+		Vector3D[] vertices = new Vector3D[vertexAmount];
 		Random random = new Random();
 		
 		for (int i = 0; i < vertexAmount; i++)
 		{
-			vertices[i] = new Vector2D(random.nextDouble() * 200 - 100, 
+			vertices[i] = new Vector3D(random.nextDouble() * 200 - 100, 
 					random.nextDouble() * 200 - 100);
 		}
 		
@@ -59,7 +59,7 @@ public class RandomConvexPolygonFactory
 	 * @return A list containing all the objects that were just created
 	 */
 	public static ArrayList<TestPolygonObject> createPolygons(HandlerRelay handlers, 
-			Vector2D[] vertices, Vector2D position)
+			Vector3D[] vertices, Vector3D position)
 	{
 		List<Polygon> polygons = new Polygon(vertices).toConvexPolygons();
 		ArrayList<TestPolygonObject> objects = new ArrayList<>();

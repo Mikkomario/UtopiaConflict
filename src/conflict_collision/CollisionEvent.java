@@ -3,7 +3,7 @@ package conflict_collision;
 import java.util.List;
 
 import conflict_collision.CollisionChecker.CollisionData;
-import genesis_util.Vector2D;
+import genesis_util.Vector3D;
 
 /**
  * CollisionEvents are collections of collision information. They are usually generated 
@@ -17,9 +17,9 @@ public class CollisionEvent
 	// ATTRIBUTES	--------------------------
 	
 	private Collidable listener, target;
-	private Vector2D mtv;
+	private Vector3D mtv;
 	private double duration;
-	private List<Vector2D> collisionPoints;
+	private List<Vector3D> collisionPoints;
 	
 	
 	// CONSTRUCTOR	--------------------------
@@ -38,8 +38,8 @@ public class CollisionEvent
 	 * @param duration How long the collision event took place (the amount of steps since the 
 	 * last check)
 	 */
-	public CollisionEvent(Collidable listener, Collidable target, Vector2D mtv, 
-			List<Vector2D> collisionPoints, double duration)
+	public CollisionEvent(Collidable listener, Collidable target, Vector3D mtv, 
+			List<Vector3D> collisionPoints, double duration)
 	{
 		// Initializes attributes
 		this.listener = listener;
@@ -93,7 +93,7 @@ public class CollisionEvent
 	 * @return The minimum translation vector from the listener's point of view. May be null 
 	 * if the mtv was not requested.
 	 */
-	public Vector2D getMTV()
+	public Vector3D getMTV()
 	{
 		return this.mtv;
 	}
@@ -110,7 +110,7 @@ public class CollisionEvent
 	 * @return The points where the collision occurred (absolute). May be null if the collision 
 	 * points were not requested.
 	 */
-	public List<Vector2D> getCollisionPoints()
+	public List<Vector3D> getCollisionPoints()
 	{
 		return this.collisionPoints;
 	}

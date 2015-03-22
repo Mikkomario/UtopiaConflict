@@ -13,7 +13,7 @@ import conflict_util.Polygon;
 import genesis_event.Drawable;
 import genesis_event.HandlerRelay;
 import genesis_util.StateOperator;
-import genesis_util.Vector2D;
+import genesis_util.Vector3D;
 
 /**
  * This class is made for simple polygon tests
@@ -46,10 +46,10 @@ public class TestPolygonObject extends SimpleGameObject implements Transformable
 		this.transformation = new Transformation();
 		
 		// Creates the polygon
-		Vector2D[] vertices = new Vector2D[vertexAmount];
+		Vector3D[] vertices = new Vector3D[vertexAmount];
 		for (int i = 0; i < vertexAmount; i++)
 		{
-			vertices[i] = new Vector2D(100, 0).withDirection(360 / vertexAmount * i);
+			vertices[i] = new Vector3D(100, 0).withZDirection(360 / vertexAmount * i);
 		}
 		this.polygon = new Polygon(vertices);
 		
@@ -91,7 +91,7 @@ public class TestPolygonObject extends SimpleGameObject implements Transformable
 			this.polygon.drawCollisionAxes(g2d);
 			
 			g2d.translate(0, 100);
-			this.polygon.getProjection(new Vector2D(1, 0)).draw(g2d);
+			this.polygon.getProjection(new Vector3D(1, 0)).draw(g2d);
 			
 			g2d.setTransform(lastTransform);
 		}

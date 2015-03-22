@@ -5,7 +5,7 @@ import genesis_event.ActorHandler;
 import genesis_event.DrawableHandler;
 import genesis_event.HandlerRelay;
 import genesis_event.KeyListenerHandler;
-import genesis_util.Vector2D;
+import genesis_util.Vector3D;
 import genesis_video.GamePanel;
 import genesis_video.GameWindow;
 
@@ -33,7 +33,7 @@ public class ConflictTest2
 	public static void main(String[] args)
 	{
 		// Creates the window
-		GameWindow window = new GameWindow(new Vector2D(800, 600), "Conflict test 2", true, 
+		GameWindow window = new GameWindow(new Vector3D(800, 600), "Conflict test 2", true, 
 				120, 20);
 		GamePanel panel = window.getMainPanel().addGamePanel();
 		
@@ -45,8 +45,8 @@ public class ConflictTest2
 		new CollisionHandler(false, window.getHandlerRelay(), handlers);
 		
 		// Creates the objects
-		new TestCharacter(handlers, new Vector2D(400, 300));
-		new TestWall(handlers, Vector2D.zeroVector(), new Vector2D(50, 400));
-		new TestWall(handlers, new Vector2D(600, 200), new Vector2D(75, 75));
+		new TestCharacter(handlers, new Vector3D(400, 300));
+		new TestWall(handlers, Vector3D.zeroVector(), new Vector3D(50, 400));
+		new TestWall(handlers, new Vector3D(600, 200), new Vector3D(75, 75));
 	}
 }

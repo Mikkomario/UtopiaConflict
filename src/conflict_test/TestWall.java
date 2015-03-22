@@ -7,7 +7,7 @@ import java.awt.geom.AffineTransform;
 import genesis_event.Drawable;
 import genesis_event.HandlerRelay;
 import genesis_util.StateOperator;
-import genesis_util.Vector2D;
+import genesis_util.Vector3D;
 import omega_util.SimpleGameObject;
 import omega_util.Transformation;
 import conflict_collision.Collidable;
@@ -37,13 +37,13 @@ public class TestWall extends SimpleGameObject implements Collidable, Drawable
 	 * @param topLeft The position of the top left corner of this wall
 	 * @param dimensions The size of this wall
 	 */
-	public TestWall(HandlerRelay handlers, Vector2D topLeft, Vector2D dimensions)
+	public TestWall(HandlerRelay handlers, Vector3D topLeft, Vector3D dimensions)
 	{
 		super(handlers);
 		
 		this.transformation = new Transformation(topLeft);
 		this.collisionInformation = new CollisionInformation(Polygon.getRectangleVertices(
-				Vector2D.zeroVector(), dimensions));
+				Vector3D.zeroVector(), dimensions));
 		this.canBeCollidedWithOperator = new StateOperator(true, false);
 	}
 	

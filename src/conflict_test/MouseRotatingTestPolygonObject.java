@@ -11,7 +11,7 @@ import genesis_event.MouseEvent;
 import genesis_event.MouseListener;
 import genesis_event.StrictEventSelector;
 import genesis_util.StateOperator;
-import genesis_util.Vector2D;
+import genesis_util.Vector3D;
 
 /**
  * This test polygon rotates around it's origin (0,0) when mouse is over it
@@ -25,7 +25,7 @@ public class MouseRotatingTestPolygonObject extends TestPolygonObject implements
 	// ATTRIBUTES	-------------------------
 	
 	private StrictEventSelector<MouseEvent, MouseEvent.Feature> selector;
-	private Vector2D lastMousePosition;
+	private Vector3D lastMousePosition;
 	
 	
 	// CONSTRUCTOR	-------------------------
@@ -42,7 +42,7 @@ public class MouseRotatingTestPolygonObject extends TestPolygonObject implements
 		// Initializes attributes
 		this.selector = new StrictEventSelector<>();
 		this.selector.addRequiredFeature(MouseEvent.MouseMovementEventType.OVER);
-		this.lastMousePosition = Vector2D.zeroVector();
+		this.lastMousePosition = Vector3D.zeroVector();
 	}
 	
 	
@@ -61,7 +61,7 @@ public class MouseRotatingTestPolygonObject extends TestPolygonObject implements
 	}
 
 	@Override
-	public boolean isInAreaOfInterest(Vector2D position)
+	public boolean isInAreaOfInterest(Vector3D position)
 	{
 		if (getPolygon() != null)
 		{

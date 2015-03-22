@@ -9,7 +9,7 @@ import java.util.List;
 import omega_util.Transformation;
 import genesis_util.HelpMath;
 import genesis_util.Line;
-import genesis_util.Vector2D;
+import genesis_util.Vector3D;
 
 /**
  * Polygon is a simple construction that consists of multiple points
@@ -21,9 +21,9 @@ public class Polygon
 {
 	// ATTRIBUTES	--------------------------
 	
-	private final Vector2D[] vertices;
+	private final Vector3D[] vertices;
 	private CirculationDirection direction;
-	private List<Vector2D> axes;
+	private List<Vector3D> axes;
 	
 	
 	// CONSTRUCTOR	--------------------------
@@ -33,7 +33,7 @@ public class Polygon
 	 * @param vertices The points that form this polygon. The points should be in order so that 
 	 * they form the lines that form this polygon.
 	 */
-	public Polygon(Vector2D[] vertices)
+	public Polygon(Vector3D[] vertices)
 	{
 		// Initializes attributes
 		this.vertices = vertices;
@@ -75,7 +75,7 @@ public class Polygon
 	 * @return The vertices that form this polygon (cloned, can't be used for changing the 
 	 * polygon)
 	 */
-	public Vector2D[] getVertices()
+	public Vector3D[] getVertices()
 	{
 		return this.vertices.clone();
 	}
@@ -90,16 +90,16 @@ public class Polygon
 	 * from it
 	 * @return The polygon's edge that collided
 	 */
-	public static Line getCollisionEdge(Polygon p, Vector2D mtv)
+	public static Line getCollisionEdge(Polygon p, Vector3D mtv)
 	{
-		Vector2D bestVertex = null;
+		Vector3D bestVertex = null;
 		double bestProduct = 0;
 		int bestIndex = -1;
 		
 		// Goes through all the vertices and finds the closest one
 		for (int i = 0; i < p.getVertexAmount(); i++)
 		{
-			Vector2D v = p.getVertex(i);
+			Vector3D v = p.getVertex(i);
 			double product = v.dotProduct(mtv);
 			
 			// The best vertex has the smallest dot product with the collision normal
@@ -131,15 +131,15 @@ public class Polygon
 	 * the first polygon)
 	 * @return A list of collision points. There will be one or two collision points.
 	 */
-	public static List<Vector2D> getCollisionPoints(Polygon p1, Polygon p2, Vector2D mtv1)
+	public static List<Vector3D> getCollisionPoints(Polygon p1, Polygon p2, Vector3D mtv1)
 	{
-		Vector2D mtv2 = mtv1.reverse();
+		Vector3D mtv2 = mtv1.reverse();
 		Line edge1 = getCollisionEdge(p1, mtv1);
 		Line edge2 = getCollisionEdge(p2, mtv2);
 		
 		Line referenceEdge = edge1;
 		Line incidentEdge = edge2;
-		Vector2D referenceMtv = mtv1;
+		Vector3D referenceMtv = mtv1;
 		
 		// The reference edge is the one that is more perpendicular to the collision normal
 		if (Math.abs(edge2.toVector().dotProduct(mtv1)) < 
@@ -153,7 +153,7 @@ public class Polygon
 		return clip(referenceEdge, incidentEdge, referenceMtv);
 	}
 	
-	private static List<Vector2D> clip(Line reference, Line incident, Vector2D referenceMtv)
+	private static List<Vector3D> clip(Line reference, Line incident, Vector3D referenceMtv)
 	{
 		// Clips from both sides
 		Line clipped = getClippedEdge(incident, reference.getStart(), reference.toVector());
@@ -165,12 +165,12 @@ public class Polygon
 			return new ArrayList<>();
 		
 		// Removes the edges from outside the third side
-		Vector2D lastNormal = reference.toVector().normal();
-		if (!HelpMath.areApproximatelyEqual(lastNormal.getDirection(), 
-				referenceMtv.getDirection()))
+		Vector3D lastNormal = reference.toVector().normal();
+		if (!HelpMath.areApproximatelyEqual(lastNormal.getZDirection(), 
+				referenceMtv.getZDirection()))
 			lastNormal = referenceMtv;
 		
-		List<Vector2D> collisionPoints = new ArrayList<>();
+		List<Vector3D> collisionPoints = new ArrayList<>();
 		
 		double origin = reference.getStart().dotProduct(lastNormal);
 		double distance1 = clipped.getStart().dotProduct(lastNormal) - origin;
@@ -184,15 +184,15 @@ public class Polygon
 		return collisionPoints;
 	}
 	
-	private static Line getClippedEdge(Line edge, Vector2D edgePoint, 
-			Vector2D clippingPlaneNormal)
+	private static Line getClippedEdge(Line edge, Vector3D edgePoint, 
+			Vector3D clippingPlaneNormal)
 	{
 		double origin = edgePoint.dotProduct(clippingPlaneNormal);
 		
 		double distance1 = edge.getStart().dotProduct(clippingPlaneNormal) - origin;
 		double distance2 = edge.getEnd().dotProduct(clippingPlaneNormal) - origin;
 		
-		List<Vector2D> clippedPoints = new ArrayList<>();
+		List<Vector3D> clippedPoints = new ArrayList<>();
 		
 		// If the vertices are inside the desired area, preserves them
 		if (distance1 >= 0)
@@ -203,7 +203,7 @@ public class Polygon
 		// If one of them wasn't, clips the edge
 		if (distance1 * distance2 < 0)
 		{
-			Vector2D edgeVector = edge.toVector();
+			Vector3D edgeVector = edge.toVector();
 			double u = distance1 / (distance1 - distance2);
 			edgeVector = edgeVector.times(u).plus(edge.getStart());
 			clippedPoints.add(edgeVector);
@@ -228,7 +228,7 @@ public class Polygon
 	 * @param index The index of the vertex in the polygon
 	 * @return The vertex at the given index in this polygon
 	 */
-	public Vector2D getVertex(int index)
+	public Vector3D getVertex(int index)
 	{
 		while (index < 0)
 			index += getVertexAmount();
@@ -249,7 +249,7 @@ public class Polygon
 	 * @return The collision axes used with this polygon. Each axis is normalized and 
 	 * perpendicular to an edge in the polygon.
 	 */
-	public List<Vector2D> getCollisionAxes()
+	public List<Vector3D> getCollisionAxes()
 	{
 		if (this.axes == null)
 			this.axes = calculateAxes();
@@ -293,7 +293,7 @@ public class Polygon
 				// will be added will be removed from this polygon
 				if (lastBrokenIndex != -1 && index - lastBrokenIndex > 1)
 				{
-					List<Vector2D> newPolyVertices = new ArrayList<Vector2D>();
+					List<Vector3D> newPolyVertices = new ArrayList<Vector3D>();
 					newPolyVertices.add(getVertex(lastBrokenIndex));
 					
 					for (int newPolyIndex = lastBrokenIndex + 1; newPolyIndex < index; 
@@ -305,7 +305,7 @@ public class Polygon
 					
 					newPolyVertices.add(getVertex(index));
 					
-					polygons.add(new Polygon(newPolyVertices.toArray(new Vector2D[0])));
+					polygons.add(new Polygon(newPolyVertices.toArray(new Vector3D[0])));
 				}
 				
 				// Remembers the broken part
@@ -317,7 +317,7 @@ public class Polygon
 		// out of the original polygon)
 		if (movedIndices.isEmpty() && lastBrokenIndex != -1)
 		{
-			Vector2D[] newPolyVertices = {getVertex(lastBrokenIndex), 
+			Vector3D[] newPolyVertices = {getVertex(lastBrokenIndex), 
 					getVertex(lastBrokenIndex + 1), 
 					getVertex(lastBrokenIndex + 2)};
 			
@@ -333,8 +333,8 @@ public class Polygon
 		{
 			// Sometimes a new polygon is formed to the center of cut polygons and must be 
 			// check separately
-			Vector2D[] remainingVertexes = 
-					new Vector2D[getVertexAmount() - movedIndices.size()];
+			Vector3D[] remainingVertexes = 
+					new Vector3D[getVertexAmount() - movedIndices.size()];
 			
 			int newIndex = 0;
 			
@@ -369,7 +369,7 @@ public class Polygon
 	 */
 	public Polygon reverse()
 	{
-		Vector2D[] newVertices = new Vector2D[getVertexAmount()];
+		Vector3D[] newVertices = new Vector3D[getVertexAmount()];
 		
 		for (int i = 0; i < getVertexAmount(); i++)
 		{
@@ -398,7 +398,7 @@ public class Polygon
 	 */
 	public Polygon transformedWith(Transformation transformation)
 	{
-		Vector2D[] transformedPoints = new Vector2D[getVertexAmount()];
+		Vector3D[] transformedPoints = new Vector3D[getVertexAmount()];
 		
 		for (int i = 0; i < getVertexAmount(); i++)
 		{
@@ -412,15 +412,15 @@ public class Polygon
 	 * @return If a bounding box was formed around the polygon, this would be its bottom right 
 	 * corner
 	 */
-	public Vector2D getBottomRight()
+	public Vector3D getBottomRight()
 	{
 		if (getVertexAmount() == 0)
-			return Vector2D.zeroVector();
+			return Vector3D.zeroVector();
 		
 		double largestX = -100000;
 		double largestY = -100000;
 		
-		for (Vector2D vertex : this.vertices)
+		for (Vector3D vertex : this.vertices)
 		{
 			if (vertex.getFirst() > largestX)
 				largestX = vertex.getFirst();
@@ -428,22 +428,22 @@ public class Polygon
 				largestY = vertex.getSecond();
 		}
 		
-		return new Vector2D(largestX, largestY);
+		return new Vector3D(largestX, largestY);
 	}
 	
 	/**
 	 * @return If a bounding box was formed around the polygon, this would be its top left
 	 * corner
 	 */
-	public Vector2D getTopLeft()
+	public Vector3D getTopLeft()
 	{
 		if (getVertexAmount() == 0)
-			return Vector2D.zeroVector();
+			return Vector3D.zeroVector();
 		
 		double smallestX = 100000;
 		double smallestY = 100000;
 		
-		for (Vector2D vertex : this.vertices)
+		for (Vector3D vertex : this.vertices)
 		{
 			if (vertex.getFirst() < smallestX)
 				smallestX = vertex.getFirst();
@@ -451,13 +451,13 @@ public class Polygon
 				smallestY = vertex.getSecond();
 		}
 		
-		return new Vector2D(smallestX, smallestY);
+		return new Vector3D(smallestX, smallestY);
 	}
 	
 	/**
 	 * @return The width and height of the bounding box around this polygon
 	 */
-	public Vector2D getDimensions()
+	public Vector3D getDimensions()
 	{
 		return getBottomRight().minus(getTopLeft());
 	}
@@ -467,7 +467,7 @@ public class Polygon
 	 * @param point The point that will be checked
 	 * @return is the point inside the bounding box
 	 */
-	public boolean pointIsWithinBoundingBox(Vector2D point)
+	public boolean pointIsWithinBoundingBox(Vector3D point)
 	{
 		return HelpMath.pointIsInRange(point, getTopLeft(), getBottomRight());
 	}
@@ -478,17 +478,17 @@ public class Polygon
 	 * @param point The point that is checked
 	 * @return Is the point inside this polygon.
 	 */
-	public boolean pointisWithin(Vector2D point)
+	public boolean pointisWithin(Vector3D point)
 	{
 		if (!pointIsWithinBoundingBox(point))
 			return false;
 		
 		// Finds two vertices that are nearest to the given point
-		List<Vector2D> closestPoints = new LinkedList<Vector2D>();
+		List<Vector3D> closestPoints = new LinkedList<Vector3D>();
 		
 		for (int i = 0; i < getVertexAmount(); i++)
 		{
-			closestPoints.add(new Vector2D(i, HelpMath.pointDistance(point, getVertex(i))));
+			closestPoints.add(new Vector3D(i, HelpMath.pointDistance2D(point, getVertex(i))));
 		}
 		
 		// Finds the two most close points
@@ -518,9 +518,9 @@ public class Polygon
 			closestPoints.add(closestPoints.remove(0));
 		
 		double dir1 = HelpMath.checkDirection(point.minus(
-				getVertex(closestPoints.get(0).getFirstInt())).getDirection());
+				getVertex(closestPoints.get(0).getFirstInt())).getZDirection());
 		double dir2 = HelpMath.checkDirection(getVertex(
-				closestPoints.get(1).getFirstInt()).minus(point).getDirection());
+				closestPoints.get(1).getFirstInt()).minus(point).getZDirection());
 		double turn = HelpMath.checkDirection(dir2 - dir1);
 		
 		// If a line going through the three points would make the polygon non-convex, 
@@ -534,9 +534,9 @@ public class Polygon
 	 * @param axis The axis along which the projection is done.
 	 * @return A line projected from this polygon
 	 */
-	public Line getProjection(Vector2D axis)
+	public Line getProjection(Vector3D axis)
 	{
-		List<Vector2D> projections = new ArrayList<>();
+		List<Vector3D> projections = new ArrayList<>();
 		
 		// Projects all points in this polygon to the given axis
 		for (int i = 0; i < getVertexAmount(); i++)
@@ -557,7 +557,7 @@ public class Polygon
 	 * @param axis The axis to which the polygons are projected to
 	 * @return Are the projections of the polygons overlapping each other
 	 */
-	public boolean overlapsAlongAxis(Polygon other, Vector2D axis)
+	public boolean overlapsAlongAxis(Polygon other, Vector3D axis)
 	{
 		return projectionsOverlap(getProjection(axis), other.getProjection(axis));
 	}
@@ -571,7 +571,7 @@ public class Polygon
 	 * @return The movement vector that will take this polygon outside the other polygon. Null 
 	 * if there is no overlapping.
 	 */
-	public Vector2D overlapsAlongAxisMTV(Polygon other, Vector2D axis)
+	public Vector3D overlapsAlongAxisMTV(Polygon other, Vector3D axis)
 	{
 		return projectionsOverlapMTV(getProjection(axis), other.getProjection(axis));
 	}
@@ -584,12 +584,12 @@ public class Polygon
 	public boolean collidesWith(Polygon other)
 	{
 		// Checks each axis, if there's an overlap on all of them, there is a collision
-		for (Vector2D axis : getCollisionAxes())
+		for (Vector3D axis : getCollisionAxes())
 		{
 			if (!overlapsAlongAxis(other, axis))
 				return false;
 		}
-		for (Vector2D axis : other.getCollisionAxes())
+		for (Vector3D axis : other.getCollisionAxes())
 		{
 			if (!overlapsAlongAxis(other, axis))
 				return false;
@@ -605,15 +605,15 @@ public class Polygon
 	 * @return The minimum translation vector that gets this polygon outside the other vector 
 	 * or null if the polygon's don't collide
 	 */
-	public Vector2D collidesWithMTV(Polygon other)
+	public Vector3D collidesWithMTV(Polygon other)
 	{
-		Vector2D mtv = null;
+		Vector3D mtv = null;
 		double smallestOverlap = -1;
 		
 		// Checks each axis, if there's an overlap on all of them, there is a collision
-		for (Vector2D axis : getCollisionAxes())
+		for (Vector3D axis : getCollisionAxes())
 		{
-			Vector2D overlapVector = overlapsAlongAxisMTV(other, axis);
+			Vector3D overlapVector = overlapsAlongAxisMTV(other, axis);
 			
 			if (overlapVector == null)
 				return null;
@@ -627,9 +627,9 @@ public class Polygon
 			}
 		}
 		// I know this is not dry, but I wouldn't want to create new lists at every check
-		for (Vector2D axis : other.getCollisionAxes())
+		for (Vector3D axis : other.getCollisionAxes())
 		{
-			Vector2D overlapVector = overlapsAlongAxisMTV(other, axis);
+			Vector3D overlapVector = overlapsAlongAxisMTV(other, axis);
 			
 			if (overlapVector == null)
 				return null;
@@ -665,7 +665,7 @@ public class Polygon
 	 */
 	public void drawBoundingBox(Graphics2D g2d)
 	{
-		Vector2D topLeft = getTopLeft(), dimensions = getDimensions();
+		Vector3D topLeft = getTopLeft(), dimensions = getDimensions();
 		
 		g2d.drawRect(topLeft.getFirstInt(), topLeft.getSecondInt(), dimensions.getFirstInt(), 
 				dimensions.getSecondInt());
@@ -677,7 +677,7 @@ public class Polygon
 	 */
 	public void drawCollisionAxes(Graphics2D g2d)
 	{
-		for (Vector2D axis : getCollisionAxes())
+		for (Vector3D axis : getCollisionAxes())
 		{
 			axis.times(100).drawAsLine(g2d);
 		}
@@ -721,7 +721,7 @@ public class Polygon
 	 * @return The MTV from the perspective of the first projection, null if the projections 
 	 * don't overlap each other
 	 */
-	public static Vector2D projectionsOverlapMTV(Line p1, Line p2)
+	public static Vector3D projectionsOverlapMTV(Line p1, Line p2)
 	{
 		ProjectionComparator comparator = new ProjectionComparator();
 		
@@ -756,10 +756,10 @@ public class Polygon
 	public static Polygon parseFromString(String s)
 	{
 		String[] verticeStrings = s.split(";");
-		Vector2D[] vertices = new Vector2D[verticeStrings.length];
+		Vector3D[] vertices = new Vector3D[verticeStrings.length];
 		for (int i = 0; i < vertices.length; i++)
 		{
-			vertices[i] = Vector2D.parseFromString(verticeStrings[i]);
+			vertices[i] = Vector3D.parseFromString(verticeStrings[i]);
 		}
 		
 		return new Polygon(vertices);
@@ -771,10 +771,10 @@ public class Polygon
 	 * @param bottomRight The bottom right corner of the rectangle
 	 * @return The vertices that form the rectangle
 	 */
-	public static Vector2D[] getRectangleVertices(Vector2D topLeft, Vector2D bottomRight)
+	public static Vector3D[] getRectangleVertices(Vector3D topLeft, Vector3D bottomRight)
 	{
-		Vector2D[] vertices = {topLeft, new Vector2D(topLeft.getFirst(), 
-				bottomRight.getSecond()), bottomRight, new Vector2D(bottomRight.getFirst(), 
+		Vector3D[] vertices = {topLeft, new Vector3D(topLeft.getFirst(), 
+				bottomRight.getSecond()), bottomRight, new Vector3D(bottomRight.getFirst(), 
 				topLeft.getSecond())};
 		return vertices;
 	}
@@ -805,17 +805,17 @@ public class Polygon
 		return CirculationDirection.getTurnDirection(totalTurn);
 	}
 	
-	private List<Vector2D> calculateAxes()
+	private List<Vector3D> calculateAxes()
 	{
-		List<Vector2D> newAxes = new ArrayList<>();
+		List<Vector3D> newAxes = new ArrayList<>();
 		
 		for (int i = 0; i < getVertexAmount(); i ++)
 		{
-			Vector2D axis = getEdge(i).toVector().normal();
+			Vector3D axis = getEdge(i).toVector().normal();
 			
 			// If there already is a paraller axis, doesn't use this one
 			boolean paraller = false;
-			for (Vector2D previousAxis : newAxes)
+			for (Vector3D previousAxis : newAxes)
 			{
 				if (previousAxis.isParallerWith(axis))
 				{
@@ -834,10 +834,10 @@ public class Polygon
 	
 	// SUBCLASSES	----------------------
 	
-	private static class ProjectionComparator implements Comparator<Vector2D>
+	private static class ProjectionComparator implements Comparator<Vector3D>
 	{
 		@Override
-		public int compare(Vector2D o1, Vector2D o2)
+		public int compare(Vector3D o1, Vector3D o2)
 		{
 			if (HelpMath.areApproximatelyEqual(o1.getFirst(), o2.getFirst()))
 				return (int) (100 * (o1.getSecond() - o2.getSecond()));

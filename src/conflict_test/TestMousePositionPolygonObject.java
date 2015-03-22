@@ -5,7 +5,7 @@ import genesis_event.HandlerRelay;
 import genesis_event.MouseEvent;
 import genesis_event.MouseListener;
 import genesis_util.StateOperator;
-import genesis_util.Vector2D;
+import genesis_util.Vector3D;
 
 /**
  * This polygon positions itself around the cursor. It also checks if it collides with another 
@@ -57,7 +57,7 @@ public class TestMousePositionPolygonObject extends TestPolygonObject implements
 	}
 
 	@Override
-	public boolean isInAreaOfInterest(Vector2D position)
+	public boolean isInAreaOfInterest(Vector3D position)
 	{
 		return false;
 	}

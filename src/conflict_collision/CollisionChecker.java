@@ -5,7 +5,7 @@ import java.util.List;
 
 import conflict_util.Polygon;
 import genesis_util.HelpMath;
-import genesis_util.Vector2D;
+import genesis_util.Vector3D;
 
 /**
  * CollisionCheckers make the necessary calculations to check if collidables collide with 
@@ -70,10 +70,10 @@ public class CollisionChecker
 	 * @param absolutePoint The point that may collide with the object
 	 * @return Is the point within the object
 	 */
-	public boolean pointCollides(Vector2D absolutePoint)
+	public boolean pointCollides(Vector3D absolutePoint)
 	{
 		// Transforms the point into relative space and checks collisions with the polygon
-		Vector2D relativePoint = this.user.getTransformation().inverseTransform(absolutePoint);
+		Vector3D relativePoint = this.user.getTransformation().inverseTransform(absolutePoint);
 		
 		// If no polygon data is available, checks with radius
 		if (!this.user.getCollisionInformation().usesPolygons())
@@ -114,12 +114,12 @@ public class CollisionChecker
 			for (Polygon otherPolygon : getAbsolutePolygons(other))
 			{
 				// Calculates the mtv only if necessary
-				Vector2D mtv = null;
+				Vector3D mtv = null;
 				if (calculateMtv)
 					mtv = thisPolygon.collidesWithMTV(otherPolygon);
 				
 				// Checks if there was a collision
-				boolean collided = (mtv != null && !mtv.equals(Vector2D.zeroVector()));
+				boolean collided = (mtv != null && !mtv.equals(Vector3D.zeroVector()));
 				if (!calculateMtv)
 					collided = thisPolygon.collidesWith(otherPolygon);
 				
@@ -127,7 +127,7 @@ public class CollisionChecker
 				// forward
 				if (collided)
 				{
-					List<Vector2D> collisionPoints = null;
+					List<Vector3D> collisionPoints = null;
 					if (calculateCollisionPoints)
 						collisionPoints = Polygon.getCollisionPoints(thisPolygon, 
 								otherPolygon, mtv);
@@ -184,9 +184,9 @@ public class CollisionChecker
 	private CollisionData checkCircleCollision(Collidable other, boolean calculateMtv, 
 			boolean calculateCollisionPoints)
 	{
-		Vector2D origin1 = this.user.getTransformation().getPosition();
-		Vector2D origin2 = other.getTransformation().getPosition();
-		double d = HelpMath.pointDistance(origin1, origin2);
+		Vector3D origin1 = this.user.getTransformation().getPosition();
+		Vector3D origin2 = other.getTransformation().getPosition();
+		double d = HelpMath.pointDistance2D(origin1, origin2);
 		double r1 = this.user.getCollisionInformation().getRadius();
 		double r2 = other.getCollisionInformation().getRadius();
 		double minimumDistance = r1 + r2;
@@ -198,8 +198,8 @@ public class CollisionChecker
 			return new CollisionData(false, null, null);
 		
 		// May collect extra data
-		Vector2D mtv = null;
-		List<Vector2D> collisionPoints = null;
+		Vector3D mtv = null;
+		List<Vector3D> collisionPoints = null;
 		if (calculateMtv)
 		{
 			double overlap = d - minimumDistance;
@@ -230,8 +230,8 @@ public class CollisionChecker
 		// ATTRIBUTES	-----------------------------
 		
 		private boolean collides;
-		private Vector2D mtv;
-		private List<Vector2D> collisionPoints;
+		private Vector3D mtv;
+		private List<Vector3D> collisionPoints;
 		
 		
 		// CONSTRUCTOR	-----------------------------
@@ -242,7 +242,7 @@ public class CollisionChecker
 		 * @param mtv The minimum translation vector calculated during the operation
 		 * @param collisionPoints The collision points calculated during the operation
 		 */
-		public CollisionData(boolean collides, Vector2D mtv, List<Vector2D> collisionPoints)
+		public CollisionData(boolean collides, Vector3D mtv, List<Vector3D> collisionPoints)
 		{
 			this.collides = collides;
 			this.mtv = mtv;
@@ -263,7 +263,7 @@ public class CollisionChecker
 		/**
 		 * @return The minimum translation vector calculated during the check
 		 */
-		public Vector2D getMtv()
+		public Vector3D getMtv()
 		{
 			return this.mtv;
 		}
@@ -271,7 +271,7 @@ public class CollisionChecker
 		/**
 		 * @return The collision points calculated during the check
 		 */
-		public List<Vector2D> getCollisionPoints()
+		public List<Vector3D> getCollisionPoints()
 		{
 			return this.collisionPoints;
 		}

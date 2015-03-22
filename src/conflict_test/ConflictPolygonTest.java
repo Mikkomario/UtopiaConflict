@@ -7,7 +7,7 @@ import genesis_event.DrawableHandler;
 import genesis_event.HandlerRelay;
 import genesis_event.MouseListenerHandler;
 import genesis_test.TextPerformanceMonitor;
-import genesis_util.Vector2D;
+import genesis_util.Vector3D;
 import genesis_video.GamePanel;
 import genesis_video.GameWindow;
 
@@ -36,7 +36,7 @@ public class ConflictPolygonTest
 	public static void main(String[] args)
 	{
 		// Creates the window
-		GameWindow window = new GameWindow(new Vector2D(800, 600), "PolygonTest", true, 
+		GameWindow window = new GameWindow(new Vector3D(800, 600), "PolygonTest", true, 
 				120, 20);
 		GamePanel panel = window.getMainPanel().addGamePanel();
 		
@@ -48,22 +48,22 @@ public class ConflictPolygonTest
 		
 		// Creates polygons
 		TestPolygonObject o = new MouseRotatingTestPolygonObject(5, handlers);
-		o.setTrasformation(Transformation.transitionTransformation(new Vector2D(200, 200)));
+		o.setTrasformation(Transformation.transitionTransformation(new Vector3D(200, 200)));
 		
 		new TestMousePositionPolygonObject(3, handlers, o);
 		
 		TestPolygonObject o3 = new TestEscapingPolygonObject(6, handlers);
 		o3.setTrasformation(Transformation.transitionTransformation(
-				new Vector2D(400, 300)).withScaling(new Vector2D(0.5, 0.5)));
+				new Vector3D(400, 300)).withScaling(new Vector3D(0.5, 0.5)));
 		
 		TestPolygonObject o4 = new TestEscapingPolygonObject(7, handlers);
 		o4.setTrasformation(Transformation.transitionTransformation(
-				new Vector2D(600, 400)).withScaling(new Vector2D(0.5, 0.5)));
+				new Vector3D(600, 400)).withScaling(new Vector3D(0.5, 0.5)));
 		
-		Vector2D[] vertices = {new Vector2D(50, -50), new Vector2D(-50, -50), 
-				/*new Vector2D(-25, 0),*/ new Vector2D(-50, 50), new Vector2D(50, 50), 
-				new Vector2D(25, 0)};
-		RandomConvexPolygonFactory.createPolygons(handlers, vertices, new Vector2D(700, 100));
+		Vector3D[] vertices = {new Vector3D(50, -50), new Vector3D(-50, -50), 
+				/*new Vector3D(-25, 0),*/ new Vector3D(-50, 50), new Vector3D(50, 50), 
+				new Vector3D(25, 0)};
+		RandomConvexPolygonFactory.createPolygons(handlers, vertices, new Vector3D(700, 100));
 		
 		// Checks performance as well
 		new TextPerformanceMonitor(1000, window.getStepHandler());

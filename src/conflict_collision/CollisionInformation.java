@@ -3,7 +3,7 @@ package conflict_collision;
 import java.awt.Graphics2D;
 import java.util.List;
 
-import genesis_util.Vector2D;
+import genesis_util.Vector3D;
 import conflict_util.Polygon;
 
 /**
@@ -30,7 +30,7 @@ public class CollisionInformation
 	 * object is expected to be at (0, 0).
 	 * @param vertices The vertices that form the object's collision polygon
 	 */
-	public CollisionInformation(Vector2D[] vertices)
+	public CollisionInformation(Vector3D[] vertices)
 	{
 		// Creates the polygon(s) and calculates radius
 		this.radius = -1;
@@ -66,7 +66,7 @@ public class CollisionInformation
 	 * @param vertices The vertices that form the object's polygon data.
 	 * @param radius The object's radius.
 	 */
-	public CollisionInformation(Vector2D[] vertices, int radius)
+	public CollisionInformation(Vector3D[] vertices, int radius)
 	{
 		this.radius = radius;
 		this.polygons = new Polygon(vertices).toConvexPolygons();
