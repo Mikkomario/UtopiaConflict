@@ -371,15 +371,9 @@ public class CollisionHandler extends Handler<CollisionListener> implements Acto
 		// IMPLEMENTED METHODS	-------------------
 
 		@Override
-		protected void changeHandledState(CollisionListener c, boolean newState)
+		protected StateOperator getHandledStateOperator(CollisionListener h)
 		{
-			c.getListensForCollisionStateOperator().setState(newState);
-		}
-
-		@Override
-		protected boolean getHandledState(CollisionListener c)
-		{
-			return c.getListensForCollisionStateOperator().getState();
+			return h.getListensForCollisionStateOperator();
 		}
 	}
 }
