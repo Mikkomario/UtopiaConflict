@@ -1,12 +1,12 @@
 package conflict_test;
 
-import omega_util.Transformation;
 import conflict_collision.CollisionHandler;
 import genesis_event.ActorHandler;
 import genesis_event.DrawableHandler;
 import genesis_event.HandlerRelay;
 import genesis_event.MouseListenerHandler;
 import genesis_test.TextPerformanceMonitor;
+import genesis_util.Transformation;
 import genesis_util.Vector3D;
 import genesis_video.GamePanel;
 import genesis_video.GameWindow;

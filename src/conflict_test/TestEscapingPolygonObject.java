@@ -1,12 +1,11 @@
 package conflict_test;
 
-import omega_util.Transformation;
 import conflict_collision.CollisionChecker;
 import conflict_collision.CollisionEvent;
 import conflict_collision.CollisionListener;
 import genesis_event.GenesisHandlerType;
 import genesis_event.HandlerRelay;
-import genesis_util.StateOperator;
+import genesis_util.Transformation;
 import genesis_util.Vector3D;
 
 /**
@@ -64,11 +63,5 @@ public class TestEscapingPolygonObject extends TestPolygonObject implements Coll
 		
 		setTrasformation(getTransformation().plus(
 				Transformation.transitionTransformation(movement)));
-	}
-
-	@Override
-	public StateOperator getListensForCollisionStateOperator()
-	{
-		return getIsActiveStateOperator();
 	}
 }

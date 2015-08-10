@@ -4,15 +4,14 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 
-import omega_util.SimpleGameObject;
-import omega_util.Transformable;
-import omega_util.Transformation;
 import conflict_collision.Collidable;
 import conflict_collision.CollisionInformation;
 import conflict_util.Polygon;
 import genesis_event.Drawable;
 import genesis_event.HandlerRelay;
-import genesis_util.StateOperator;
+import genesis_util.SimpleHandled;
+import genesis_util.Transformable;
+import genesis_util.Transformation;
 import genesis_util.Vector3D;
 
 /**
@@ -21,7 +20,7 @@ import genesis_util.Vector3D;
  * @author Mikko Hilpinen
  * @since 9.12.2014
  */
-public class TestPolygonObject extends SimpleGameObject implements Transformable, Drawable, 
+public class TestPolygonObject extends SimpleHandled implements Transformable, Drawable, 
 		Collidable
 {
 	// ATTRIBUTES	-------------------------
@@ -104,12 +103,6 @@ public class TestPolygonObject extends SimpleGameObject implements Transformable
 	}
 
 	@Override
-	public StateOperator getIsVisibleStateOperator()
-	{
-		return getIsActiveStateOperator();
-	}
-
-	@Override
 	public Transformation getTransformation()
 	{
 		return this.transformation;
@@ -125,12 +118,6 @@ public class TestPolygonObject extends SimpleGameObject implements Transformable
 	public CollisionInformation getCollisionInformation()
 	{
 		return this.collisionInformation;
-	}
-
-	@Override
-	public StateOperator getCanBeCollidedWithStateOperator()
-	{
-		return getIsActiveStateOperator();
 	}
 	
 	

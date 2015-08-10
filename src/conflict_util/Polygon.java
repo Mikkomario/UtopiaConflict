@@ -6,9 +6,9 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
-import omega_util.Transformation;
 import genesis_util.HelpMath;
 import genesis_util.Line;
+import genesis_util.Transformation;
 import genesis_util.Vector3D;
 
 /**

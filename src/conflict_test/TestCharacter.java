@@ -14,10 +14,9 @@ import genesis_event.KeyEvent.KeyEventType;
 import genesis_event.KeyListener;
 import genesis_util.HelpMath;
 import genesis_util.Line;
-import genesis_util.StateOperator;
+import genesis_util.SimpleHandled;
+import genesis_util.Transformation;
 import genesis_util.Vector3D;
-import omega_util.SimpleGameObject;
-import omega_util.Transformation;
 import conflict_collision.CollisionChecker;
 import conflict_collision.CollisionEvent;
 import conflict_collision.CollisionInformation;
@@ -28,7 +27,7 @@ import conflict_collision.CollisionListener;
  * @author Mikko Hilpinen
  * @since 12.3.2015
  */
-public class TestCharacter extends SimpleGameObject implements
+public class TestCharacter extends SimpleHandled implements
 		CollisionListener, Drawable, KeyListener
 {
 	// ATTRIBUTES	----------------------------
@@ -73,12 +72,6 @@ public class TestCharacter extends SimpleGameObject implements
 	}
 
 	@Override
-	public StateOperator getCanBeCollidedWithStateOperator()
-	{
-		return getIsActiveStateOperator();
-	}
-
-	@Override
 	public Transformation getTransformation()
 	{
 		return this.transformation;
@@ -97,12 +90,6 @@ public class TestCharacter extends SimpleGameObject implements
 	}
 
 	@Override
-	public StateOperator getListensToKeyEventsOperator()
-	{
-		return getIsActiveStateOperator();
-	}
-
-	@Override
 	public void onKeyEvent(KeyEvent e)
 	{
 		double rotation = 0, speed = 0;
@@ -113,7 +100,7 @@ public class TestCharacter extends SimpleGameObject implements
 			speed = -5;
 		else if (e.getKey() == KeyEvent.LEFT)
 			rotation = 3;
-		else if (e.getKey() == KeyEvent.RIGTH)
+		else if (e.getKey() == KeyEvent.RIGHT)
 			rotation = -3;
 		
 		Transformation change = null;
@@ -162,12 +149,6 @@ public class TestCharacter extends SimpleGameObject implements
 	}
 
 	@Override
-	public StateOperator getIsVisibleStateOperator()
-	{
-		return getIsActiveStateOperator();
-	}
-
-	@Override
 	public CollisionChecker getCollisionChecker()
 	{
 		return this.collisionChecker;
@@ -198,11 +179,5 @@ public class TestCharacter extends SimpleGameObject implements
 		// Bounces away from the target
 		setTrasformation(getTransformation().plus(
 				Transformation.transitionTransformation(event.getMTV())));
-	}
-
-	@Override
-	public StateOperator getListensForCollisionStateOperator()
-	{
-		return getIsActiveStateOperator();
 	}
 }

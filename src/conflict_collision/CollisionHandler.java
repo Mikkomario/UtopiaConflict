@@ -25,7 +25,6 @@ public class CollisionHandler extends Handler<CollisionListener> implements Acto
 	
 	private CollidableHandler collidableHandler;
 	private double lastDuration;
-	private StateOperator isActiveOperator;
 	private List<CollisionListener> previousListeners;
 	
 	
@@ -45,7 +44,6 @@ public class CollisionHandler extends Handler<CollisionListener> implements Acto
 		
 		// Initializes attributes
 		this.collidableHandler = new CollidableHandler();
-		this.isActiveOperator = new AnyListenerIsActiveOperator();
 		this.previousListeners = new ArrayList<>();
 		
 		if (superHandler != null)
@@ -71,7 +69,6 @@ public class CollisionHandler extends Handler<CollisionListener> implements Acto
 		
 		// Initializes attributes
 		this.collidableHandler = new CollidableHandler();
-		this.isActiveOperator = new AnyListenerIsActiveOperator();
 		this.previousListeners = new ArrayList<>();
 		
 		if (relay != null)
@@ -94,7 +91,6 @@ public class CollisionHandler extends Handler<CollisionListener> implements Acto
 		
 		// Initializes attributes
 		this.collidableHandler = new CollidableHandler();
-		this.isActiveOperator = new AnyListenerIsActiveOperator();
 		this.previousListeners = new ArrayList<>();
 		
 		if (relay != null)
@@ -115,15 +111,9 @@ public class CollisionHandler extends Handler<CollisionListener> implements Acto
 		{
 			// Checks for collisions
 			this.lastDuration = duration;
-			handleObjects();
+			handleObjects(false);
 			this.previousListeners.clear();
 		}
-	}
-
-	@Override
-	public StateOperator getIsActiveStateOperator()
-	{
-		return this.isActiveOperator;
 	}
 
 	@Override
@@ -135,8 +125,8 @@ public class CollisionHandler extends Handler<CollisionListener> implements Acto
 	@Override
 	protected boolean handleObject(CollisionListener h)
 	{
-		// Only active listeners are informed
-		if (h.getListensForCollisionStateOperator().getState())
+		// Only active listeners are informed about events
+		if (h.getHandlingOperators().getShouldBeHandledOperator(getHandlerType()).getState())
 		{
 			// Checks for collisions with the already handled listeners
 			for (CollisionListener previousListener : this.previousListeners)
@@ -146,8 +136,7 @@ public class CollisionHandler extends Handler<CollisionListener> implements Acto
 				boolean currentIsInterested = 
 						h.getCollisionChecker().isInterestedInCollisionsWith(previousListener) 
 						&& previousListener.getCollisionInformation().allowsCollisionEventsFor(h);
-				boolean previousIsInterested = 
-						previousListener.getListensForCollisionStateOperator().getState() && 
+				boolean previousIsInterested =  
 						previousListener.getCollisionChecker().isInterestedInCollisionsWith(h) 
 						&& h.getCollisionInformation().allowsCollisionEventsFor(previousListener);
 				
@@ -193,7 +182,8 @@ public class CollisionHandler extends Handler<CollisionListener> implements Acto
 			// Also checks for collisions with other collidables
 			this.collidableHandler.checkForCollisionsWith(h, this.lastDuration);
 		}
-			
+		
+		// Even inactive listeners can be collided with though
 		this.previousListeners.add(h);
 		return true;
 	}
@@ -290,15 +280,14 @@ public class CollisionHandler extends Handler<CollisionListener> implements Acto
 		@Override
 		protected boolean handleObject(Collidable h)
 		{
-			if (h == null || h.getCanBeCollidedWithStateOperator() == null)
+			if (h == null)
 				return true;
 			
 			// Checks if the two objects accept each other as collided objects (= is collision 
 			// checking necessary)
-			if (!h.getCanBeCollidedWithStateOperator().getState())
-				return true;
 			
-			if (!h.getCollisionInformation().allowsCollisionEventsFor(this.lastListener) || 
+			if (h.getCollisionInformation() == null || 
+					!h.getCollisionInformation().allowsCollisionEventsFor(this.lastListener) || 
 					!this.lastListener.getCollisionChecker().isInterestedInCollisionsWith(h))
 				return true;
 			
@@ -353,27 +342,8 @@ public class CollisionHandler extends Handler<CollisionListener> implements Acto
 		{
 			this.lastDuration = duration;
 			this.lastListener = listener;
-			handleObjects();
+			handleObjects(true);
 			this.lastListener = null;
-		}
-	}
-	
-	private class AnyListenerIsActiveOperator extends ForAnyHandledsOperator
-	{
-		// CONSTRUCTOR	-------------------------
-		
-		public AnyListenerIsActiveOperator()
-		{
-			super(true);
-		}
-		
-		
-		// IMPLEMENTED METHODS	-------------------
-
-		@Override
-		protected StateOperator getHandledStateOperator(CollisionListener h)
-		{
-			return h.getListensForCollisionStateOperator();
 		}
 	}
 }

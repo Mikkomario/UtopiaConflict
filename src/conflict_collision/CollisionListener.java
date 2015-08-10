@@ -1,7 +1,5 @@
 package conflict_collision;
 
-import genesis_util.StateOperator;
-
 /**
  * CollisionListeners are interested in collision events with other objects and are informed 
  * about those events by collisionHandlers.
@@ -24,10 +22,4 @@ public interface CollisionListener extends Collidable
 	 * another object.
 	 */
 	public void onCollisionEvent(CollisionEvent event);
-	
-	/**
-	 * @return The stateOperator that determines whether the object should be informed about 
-	 * collision events at all.
-	 */
-	public StateOperator getListensForCollisionStateOperator();
 }

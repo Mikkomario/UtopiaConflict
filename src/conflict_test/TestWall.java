@@ -6,10 +6,9 @@ import java.awt.geom.AffineTransform;
 
 import genesis_event.Drawable;
 import genesis_event.HandlerRelay;
-import genesis_util.StateOperator;
+import genesis_util.SimpleHandled;
+import genesis_util.Transformation;
 import genesis_util.Vector3D;
-import omega_util.SimpleGameObject;
-import omega_util.Transformation;
 import conflict_collision.Collidable;
 import conflict_collision.CollisionInformation;
 import conflict_util.Polygon;
@@ -20,13 +19,12 @@ import conflict_util.Polygon;
  * @author Mikko Hilpinen
  * @since 12.3.2015
  */
-public class TestWall extends SimpleGameObject implements Collidable, Drawable
+public class TestWall extends SimpleHandled implements Collidable, Drawable
 {
 	// ATTRIBUTES	----------------------------
 	
 	private Transformation transformation;
 	private CollisionInformation collisionInformation;
-	private StateOperator canBeCollidedWithOperator;
 	
 	
 	// CONSTRUCTOR	----------------------------
@@ -44,7 +42,6 @@ public class TestWall extends SimpleGameObject implements Collidable, Drawable
 		this.transformation = new Transformation(topLeft);
 		this.collisionInformation = new CollisionInformation(Polygon.getRectangleVertices(
 				Vector3D.zeroVector(), dimensions));
-		this.canBeCollidedWithOperator = new StateOperator(true, false);
 	}
 	
 	
@@ -69,12 +66,6 @@ public class TestWall extends SimpleGameObject implements Collidable, Drawable
 	}
 
 	@Override
-	public StateOperator getCanBeCollidedWithStateOperator()
-	{
-		return this.canBeCollidedWithOperator;
-	}
-
-	@Override
 	public void drawSelf(Graphics2D g2d)
 	{
 		g2d.setColor(Color.BLACK);
@@ -93,11 +84,5 @@ public class TestWall extends SimpleGameObject implements Collidable, Drawable
 	public int getDepth()
 	{
 		return 0;
-	}
-
-	@Override
-	public StateOperator getIsVisibleStateOperator()
-	{
-		return getIsActiveStateOperator();
 	}
 }

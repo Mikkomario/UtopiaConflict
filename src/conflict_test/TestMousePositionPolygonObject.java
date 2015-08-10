@@ -4,7 +4,6 @@ import genesis_event.EventSelector;
 import genesis_event.HandlerRelay;
 import genesis_event.MouseEvent;
 import genesis_event.MouseListener;
-import genesis_util.StateOperator;
 import genesis_util.Vector3D;
 
 /**
@@ -43,12 +42,6 @@ public class TestMousePositionPolygonObject extends TestPolygonObject implements
 	
 	
 	// IMPLEMENTED METHODS	-------------------------
-
-	@Override
-	public StateOperator getListensToMouseEventsOperator()
-	{
-		return getIsActiveStateOperator();
-	}
 
 	@Override
 	public EventSelector<MouseEvent> getMouseEventSelector()

@@ -16,6 +16,11 @@ import genesis_util.Vector3D;
  */
 public class CollisionChecker
 {
+	// TODO: Create a new system where some of the collision checking is done at 
+	// collisionInformation.
+	// !!!Add collisions between circles and polygons!!!
+	// Each collisionInformation may contain circles and polygons
+	
 	// ATTRIBUTES	-----------------------
 	
 	private Collidable user;

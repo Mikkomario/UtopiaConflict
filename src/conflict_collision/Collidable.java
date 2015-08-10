@@ -1,8 +1,7 @@
 package conflict_collision;
 
-import omega_util.Transformable;
 import genesis_event.Handled;
-import genesis_util.StateOperator;
+import genesis_util.Transformable;
 
 /**
  * Collidable objects can be collided with and have transformation information.
@@ -16,10 +15,4 @@ public interface Collidable extends Handled, Transformable
 	 * @return The object's collision information
 	 */
 	public CollisionInformation getCollisionInformation();
-	
-	/**
-	 * @return The state operator that tells whether the object can be collided with 
-	 * or not.
-	 */
-	public StateOperator getCanBeCollidedWithStateOperator();
 }
