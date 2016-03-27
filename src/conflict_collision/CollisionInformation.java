@@ -3,19 +3,20 @@ package conflict_collision;
 import java.awt.Graphics2D;
 import java.util.List;
 
-import genesis_util.Vector3D;
 import conflict_util.Polygon;
+import utopia.genesis.util.Vector3D;
 
 /**
  * CollisionInformation is a collection of a resource's state regarding collision 
  * related data.
- * 
  * @author Mikko Hilpinen
  * @since 8.12.2014
  */
 public class CollisionInformation
 {
 	// ATTRIBUTES	----------------------------
+	
+	// TODO: Add support for circles and "brach's bubble form"
 	
 	private double radius;
 	private List<Polygon> polygons;
@@ -137,9 +138,18 @@ public class CollisionInformation
 	 * @param supportedListeners The set of classes that can receive collision events that 
 	 * include this object / information.
 	 */
-	public void limitSupportedListenersTo(Class<?>[] supportedListeners)
+	public void limitSupportedListenersTo(Class<?>... supportedListeners)
 	{
 		this.supportedListeners = supportedListeners;
+	}
+	
+	/**
+	 * Makes it so that all classes can receive collision events when colliding with this 
+	 * object, which is the default state of this object.
+	 */
+	public void resetLimitedClasses()
+	{
+		this.supportedListeners = null;
 	}
 	
 	/**

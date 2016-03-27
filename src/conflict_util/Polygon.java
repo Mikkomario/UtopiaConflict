@@ -6,14 +6,14 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
-import genesis_util.HelpMath;
-import genesis_util.Line;
-import genesis_util.Transformation;
-import genesis_util.Vector3D;
+import utopia.genesis.util.HelpMath;
+import utopia.genesis.util.Line;
+import utopia.genesis.util.Transformation;
+import utopia.genesis.util.Vector3D;
 
 /**
- * Polygon is a simple construction that consists of multiple points
- * 
+ * Polygon is a simple construction that consists of multiple points. Polygons can be traversed 
+ * through clockwise and counter-clockwise.
  * @author Mikko Hilpinen
  * @since 8.12.2014
  */
@@ -24,6 +24,7 @@ public class Polygon
 	private final Vector3D[] vertices;
 	private CirculationDirection direction;
 	private List<Vector3D> axes;
+	private Vector3D topLeft, bottomRight;
 	
 	
 	// CONSTRUCTOR	--------------------------
@@ -39,11 +40,12 @@ public class Polygon
 		this.vertices = vertices;
 		this.direction = null;
 		this.axes = null;
+		this.topLeft = null;
+		this.bottomRight = null;
 	}
 	
 	/**
-	 * Creates a new polygon by copying the other polygon
-	 * 
+	 * Creates a new polygon by copying another polygon
 	 * @param other The polygon that will be copied
 	 */
 	public Polygon(Polygon other)
@@ -51,6 +53,8 @@ public class Polygon
 		this.vertices = other.getVertices();
 		this.direction = other.direction;
 		this.axes = other.axes;
+		this.topLeft = other.topLeft;
+		this.bottomRight = other.bottomRight;
 	}
 	
 	
@@ -59,13 +63,15 @@ public class Polygon
 	@Override
 	public String toString()
 	{
-		String s = getVertex(0).toString();
-		for (int i = 1; i < getVertexAmount(); i++)
+		StringBuilder s = new StringBuilder();
+		for (int i = 0; i < getVertexAmount(); i++)
 		{
-			s += ";" + getVertex(i).toString();
+			if (i != 0)
+				s.append(";");
+			s.append(getVertex(i));
 		}
 		
-		return s;
+		return s.toString();
 	}
 	
 	
@@ -246,7 +252,7 @@ public class Polygon
 	}
 	
 	/**
-	 * @return The collision axes used with this polygon. Each axis is normalized and 
+	 * @return The collision axes used with this polygon. Each axis is normalised and 
 	 * perpendicular to an edge in the polygon.
 	 */
 	public List<Vector3D> getCollisionAxes()
@@ -258,7 +264,8 @@ public class Polygon
 	}
 	
 	/**
-	 * @return Is the polygon convex
+	 * @return Is the polygon convex. A polygon is convex when and only when one must only turn 
+	 * left or only turn right when traversing through the polygon.
 	 */
 	public boolean isConvex()
 	{
@@ -376,7 +383,10 @@ public class Polygon
 			newVertices[i] = getVertex(getVertexAmount() - 1 - i);
 		}
 		
-		return new Polygon(newVertices);
+		Polygon reversed = new Polygon(newVertices);
+		if (this.direction != null)
+			reversed.direction = this.direction.reverse();
+		return reversed;
 	}
 	
 	/**
@@ -414,21 +424,28 @@ public class Polygon
 	 */
 	public Vector3D getBottomRight()
 	{
-		if (getVertexAmount() == 0)
-			return Vector3D.zeroVector();
-		
-		double largestX = -100000;
-		double largestY = -100000;
-		
-		for (Vector3D vertex : this.vertices)
+		if (this.bottomRight == null)
 		{
-			if (vertex.getFirst() > largestX)
-				largestX = vertex.getFirst();
-			if (vertex.getSecond() > largestY)
-				largestY = vertex.getSecond();
+			if (getVertexAmount() == 0)
+				return Vector3D.zeroVector();
+			
+			double largestX = getVertex(0).getFirst();
+			double largestY = getVertex(0).getSecond();
+			
+			for (int i = 1; i < getVertexAmount(); i++)
+			{
+				Vector3D vertex = getVertex(i);
+				
+				if (vertex.getFirst() > largestX)
+					largestX = vertex.getFirst();
+				if (vertex.getSecond() > largestY)
+					largestY = vertex.getSecond();
+			}
+			
+			this.bottomRight = new Vector3D(largestX, largestY);
 		}
 		
-		return new Vector3D(largestX, largestY);
+		return this.bottomRight;
 	}
 	
 	/**
@@ -437,21 +454,28 @@ public class Polygon
 	 */
 	public Vector3D getTopLeft()
 	{
-		if (getVertexAmount() == 0)
-			return Vector3D.zeroVector();
-		
-		double smallestX = 100000;
-		double smallestY = 100000;
-		
-		for (Vector3D vertex : this.vertices)
+		if (this.topLeft == null)
 		{
-			if (vertex.getFirst() < smallestX)
-				smallestX = vertex.getFirst();
-			if (vertex.getSecond() < smallestY)
-				smallestY = vertex.getSecond();
+			if (getVertexAmount() == 0)
+				return Vector3D.zeroVector();
+			
+			double smallestX = getVertex(0).getFirst();
+			double smallestY = getVertex(0).getSecond();
+			
+			for (int i = 1; i < getVertexAmount(); i++)
+			{
+				Vector3D vertex = getVertex(i);
+				
+				if (vertex.getFirst() < smallestX)
+					smallestX = vertex.getFirst();
+				if (vertex.getSecond() < smallestY)
+					smallestY = vertex.getSecond();
+			}
+			
+			this.topLeft = new Vector3D(smallestX, smallestY);
 		}
 		
-		return new Vector3D(smallestX, smallestY);
+		return this.topLeft;
 	}
 	
 	/**
@@ -484,6 +508,7 @@ public class Polygon
 			return false;
 		
 		// Finds two vertices that are nearest to the given point
+		// TODO: Consider using pair instead
 		List<Vector3D> closestPoints = new LinkedList<Vector3D>();
 		
 		for (int i = 0; i < getVertexAmount(); i++)
@@ -512,7 +537,6 @@ public class Polygon
 		
 		// Checks that the points are in right order (the first and the last go the 
 		// wrong way (index) by default)
-		
 		if (closestPoints.get(1).getFirstInt() - closestPoints.get(0).getFirstInt() > 
 				getVertexAmount() / 2)
 			closestPoints.add(closestPoints.remove(0));
@@ -530,7 +554,6 @@ public class Polygon
 	
 	/**
 	 * Projects this polygon to the given axis.
-	 * 
 	 * @param axis The axis along which the projection is done.
 	 * @return A line projected from this polygon
 	 */
@@ -626,6 +649,7 @@ public class Polygon
 				smallestOverlap = overlapAmount;
 			}
 		}
+		// TODO: WET WET
 		// I know this is not dry, but I wouldn't want to create new lists at every check
 		for (Vector3D axis : other.getCollisionAxes())
 		{
@@ -715,7 +739,6 @@ public class Polygon
 	/**
 	 * Finds the minimum translation vector (MTV) that makes the projection p1 move outside 
 	 * the projection p2. If there is no overlapping, null is returned.
-	 * 
 	 * @param p1 The projection of the first polygon.
 	 * @param p2 The projection of the second polygon.
 	 * @return The MTV from the perspective of the first projection, null if the projections 
@@ -852,7 +875,6 @@ public class Polygon
 	/**
 	 * Angle can circle to either clockwise or counter-clockwise direction, and so can 
 	 * polygons.
-	 * 
 	 * @author Mikko Hilpinen
 	 * @since 8.12.2014
 	 */
@@ -869,6 +891,17 @@ public class Polygon
 		
 		
 		// OTHER METHODS	-----------------------
+		
+		/**
+		 * @return The circulation direction opposite to this one
+		 */
+		public CirculationDirection reverse()
+		{
+			if (this == CLOCKWISE)
+				return CirculationDirection.COUNTERCLOCKWISE;
+			else
+				return CirculationDirection.CLOCKWISE;
+		}
 		
 		/**
 		 * Checks the circulation direction corresponding with an angular turn

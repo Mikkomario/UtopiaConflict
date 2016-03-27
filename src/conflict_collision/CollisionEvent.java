@@ -3,12 +3,11 @@ package conflict_collision;
 import java.util.List;
 
 import conflict_collision.CollisionChecker.CollisionData;
-import genesis_util.Vector3D;
+import utopia.genesis.util.Vector3D;
 
 /**
  * CollisionEvents are collections of collision information. They are usually generated 
  * when two objects collide with each other.
- * 
  * @author Mikko Hilpinen
  * @since 20.12.2014
  */

@@ -4,13 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import conflict_util.Polygon;
-import genesis_util.HelpMath;
-import genesis_util.Vector3D;
+import utopia.genesis.util.HelpMath;
+import utopia.genesis.util.Vector3D;
 
 /**
  * CollisionCheckers make the necessary calculations to check if collidables collide with 
  * other collidables or points.
- * 
  * @author Mikko Hilpinen
  * @since 19.12.2014
  */
@@ -124,8 +123,10 @@ public class CollisionChecker
 					mtv = thisPolygon.collidesWithMTV(otherPolygon);
 				
 				// Checks if there was a collision
-				boolean collided = (mtv != null && !mtv.equals(Vector3D.zeroVector()));
-				if (!calculateMtv)
+				boolean collided;
+				if (calculateMtv)
+					collided = (mtv != null && !mtv.equals(Vector3D.zeroVector()));
+				else
 					collided = thisPolygon.collidesWith(otherPolygon);
 				
 				// On collision, may calculate points and return the data, otherwise moves 
@@ -149,12 +150,20 @@ public class CollisionChecker
 	 * Changes the set of classes this collision checker is interested in. By default the 
 	 * checker is interested in collisions with all classes but this can be limited with this 
 	 * method.
-	 * @param checkedClasses The classes the checker should be interested in. Null if the 
-	 * checker should be interested in collisions with all objects (default)
+	 * @param checkedClasses The classes the checker should be interested in.
 	 */
-	public void limitCheckedClassesTo(Class<?>[] checkedClasses)
+	public void limitCheckedClassesTo(Class<?>... checkedClasses)
 	{
 		this.interestingClasses = checkedClasses;
+	}
+	
+	/**
+	 * Makes it so that the checker will receive events from all object classes, which is the 
+	 * default state of the checker.
+	 */
+	public void resetCheckedClassesLimit()
+	{
+		this.interestingClasses = null;
 	}
 	
 	/**
@@ -189,6 +198,8 @@ public class CollisionChecker
 	private CollisionData checkCircleCollision(Collidable other, boolean calculateMtv, 
 			boolean calculateCollisionPoints)
 	{
+		// TODO: Add collision checking between circles and polygons
+		
 		Vector3D origin1 = this.user.getTransformation().getPosition();
 		Vector3D origin2 = other.getTransformation().getPosition();
 		double d = HelpMath.pointDistance2D(origin1, origin2);
@@ -212,6 +223,7 @@ public class CollisionChecker
 			
 			if (calculateCollisionPoints)
 			{
+				// TODO: These are not the actual collision points
 				collisionPoints = new ArrayList<>();
 				collisionPoints.add(origin1.plus(mtv.reverse().withLength(r1)));
 				collisionPoints.add(origin2.plus(mtv.withLength(r2)));

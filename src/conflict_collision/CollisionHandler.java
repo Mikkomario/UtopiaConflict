@@ -4,18 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import conflict_collision.CollisionChecker.CollisionData;
-import genesis_event.Actor;
-import genesis_event.ActorHandler;
-import genesis_event.Handled;
-import genesis_event.Handler;
-import genesis_event.HandlerRelay;
-import genesis_event.HandlerType;
-import genesis_util.StateOperator;
 
 /**
  * CollisionHandlers inform collision listeners about collision events. They also keep track 
  * of all the collidables those listeners can collide with.
- * 
  * @author Mikko Hilpinen
  * @since 21.12.2014
  */

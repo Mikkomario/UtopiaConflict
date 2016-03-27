@@ -1,6 +1,6 @@
 package conflict_collision;
 
-import genesis_event.HandlerType;
+import utopia.inception.handling.HandlerType;
 
 /**
  * These are the handler types introduced in the Conflict module

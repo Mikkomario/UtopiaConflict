@@ -3,7 +3,6 @@ package conflict_collision;
 /**
  * CollisionListeners are interested in collision events with other objects and are informed 
  * about those events by collisionHandlers.
- * 
  * @author Mikko Hilpinen
  * @since 21.12.2014
  */
