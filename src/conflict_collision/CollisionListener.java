@@ -1,12 +1,14 @@
 package conflict_collision;
 
+import utopia.inception.handling.Handled;
+
 /**
  * CollisionListeners are interested in collision events with other objects and are informed 
  * about those events by collisionHandlers.
  * @author Mikko Hilpinen
  * @since 21.12.2014
  */
-public interface CollisionListener extends Collidable
+public interface CollisionListener extends Handled
 {
 	/**
 	 * Each collisionListener should be able to provide a collision checker that helps with 
