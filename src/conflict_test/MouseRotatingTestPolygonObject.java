@@ -4,13 +4,12 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 
-import genesis_event.EventSelector;
-import genesis_event.HandlerRelay;
-import genesis_event.MouseEvent;
-import genesis_event.MouseListener;
-import genesis_event.StrictEventSelector;
-import genesis_util.Transformation;
-import genesis_util.Vector3D;
+import utopia.genesis.event.MouseEvent;
+import utopia.genesis.event.MouseListener;
+import utopia.genesis.util.Transformation;
+import utopia.genesis.util.Vector3D;
+import utopia.inception.event.EventSelector;
+import utopia.inception.event.StrictEventSelector;
 
 /**
  * This test polygon rotates around it's origin (0,0) when mouse is over it
@@ -32,11 +31,10 @@ public class MouseRotatingTestPolygonObject extends TestPolygonObject implements
 	/**
 	 * Creates a new object
 	 * @param vertexAmount How many vertices the polygon will have
-	 * @param handlers The handlers that will handle this object
 	 */
-	public MouseRotatingTestPolygonObject(int vertexAmount, HandlerRelay handlers)
+	public MouseRotatingTestPolygonObject(int vertexAmount)
 	{
-		super(vertexAmount, handlers);
+		super(vertexAmount);
 		
 		// Initializes attributes
 		this.selector = new StrictEventSelector<>();

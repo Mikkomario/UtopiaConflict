@@ -1,7 +1,5 @@
 package conflict_collision;
 
-import java.util.Collection;
-
 import conflict_collision.CollisionChecker.CollisionData;
 import utopia.inception.handling.Handler;
 import utopia.inception.handling.HandlerType;
@@ -18,7 +16,6 @@ public class CollidableHandler extends Handler<Collidable>
 	
 	private CollisionListener lastListener;
 	private double lastDuration;
-	private Collection<? extends Collidable> skipThese;
 	
 	
 	// IMPLEMENTED METHODS	---------------------
@@ -32,7 +29,8 @@ public class CollidableHandler extends Handler<Collidable>
 	@Override
 	protected boolean handleObject(Collidable h)
 	{
-		if (h == null || this.skipThese.contains(h))
+		// An object can't collide with itself
+		if (h == null || h == this.lastListener)
 			return true;
 		
 		// Checks if the two objects accept each other as collided objects (= is collision 
@@ -60,8 +58,7 @@ public class CollidableHandler extends Handler<Collidable>
 		
 		// If there was a collision, informs the listener
 		if (data.collided())
-			this.lastListener.onCollisionEvent(new CollisionEvent(this.lastListener, h, 
-					data, this.lastDuration));
+			this.lastListener.onCollisionEvent(new CollisionEvent(h, data, this.lastDuration));
 		
 		return true;
 	}
@@ -74,17 +71,13 @@ public class CollidableHandler extends Handler<Collidable>
 	 * listener will be informed about each collision event.
 	 * @param listener The listener that will be informed about collision events concerning it.
 	 * @param duration The duration of the collision
-	 * @param skipThese The objects that should be skipped when checking for collisions
 	 */
-	public void checkForCollisionsWith(CollisionListener listener, double duration, 
-			Collection<? extends Collidable> skipThese)
+	public void checkForCollisionsWith(CollisionListener listener, double duration)
 	{
-		this.skipThese = skipThese;
 		this.lastDuration = duration;
 		this.lastListener = listener;
 		handleObjects(true);
 		
 		this.lastListener = null;
-		this.skipThese = null;
 	}
 }

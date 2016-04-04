@@ -4,18 +4,16 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 
-import genesis_event.Drawable;
-import genesis_event.HandlerRelay;
-import genesis_util.SimpleHandled;
-import genesis_util.Transformation;
-import genesis_util.Vector3D;
 import conflict_collision.Collidable;
 import conflict_collision.CollisionInformation;
 import conflict_util.Polygon;
+import utopia.genesis.event.Drawable;
+import utopia.genesis.util.Transformation;
+import utopia.genesis.util.Vector3D;
+import utopia.inception.util.SimpleHandled;
 
 /**
  * This is a simple wall that can be placed and collided with
- * 
  * @author Mikko Hilpinen
  * @since 12.3.2015
  */
@@ -30,18 +28,16 @@ public class TestWall extends SimpleHandled implements Collidable, Drawable
 	// CONSTRUCTOR	----------------------------
 	
 	/**
-	 * Creates a new testWall to the given position and with the given size
-	 * @param handlers The handlers that will handle this wall (collidable, drawable)
+	 * Creates a new testWall to the given position and with the given size. Remember to add 
+	 * the wall to correct handlers (collidable, drawable)
 	 * @param topLeft The position of the top left corner of this wall
-	 * @param dimensions The size of this wall
+	 * @param size The size of this wall
 	 */
-	public TestWall(HandlerRelay handlers, Vector3D topLeft, Vector3D dimensions)
+	public TestWall(Vector3D topLeft, Vector3D size)
 	{
-		super(handlers);
-		
 		this.transformation = new Transformation(topLeft);
 		this.collisionInformation = new CollisionInformation(Polygon.getRectangleVertices(
-				Vector3D.zeroVector(), dimensions));
+				Vector3D.zeroVector(), size));
 	}
 	
 	

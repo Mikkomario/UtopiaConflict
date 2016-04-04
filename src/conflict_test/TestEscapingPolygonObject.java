@@ -3,14 +3,11 @@ package conflict_test;
 import conflict_collision.CollisionChecker;
 import conflict_collision.CollisionEvent;
 import conflict_collision.CollisionListener;
-import genesis_event.GenesisHandlerType;
-import genesis_event.HandlerRelay;
-import genesis_util.Transformation;
-import genesis_util.Vector3D;
+import utopia.genesis.util.Transformation;
+import utopia.genesis.util.Vector3D;
 
 /**
  * This polygon tries to get outside a polygon
- * 
  * @author Mikko Hilpinen
  * @since 18.12.2014
  */
@@ -26,19 +23,14 @@ public class TestEscapingPolygonObject extends TestPolygonObject implements Coll
 	/**
 	 * Creates a new object
 	 * @param vertexAmount How many vertices the polygon will have
-	 * @param handlers The handlers that will handle this polygon
 	 */
-	public TestEscapingPolygonObject(int vertexAmount, HandlerRelay handlers)
+	public TestEscapingPolygonObject(int vertexAmount)
 	{
-		super(vertexAmount, handlers);
-		
-		System.out.println("ActorHandler provied: " + 
-				handlers.containsHandlerOfType(GenesisHandlerType.ACTORHANDLER));
+		super(vertexAmount);
 		
 		// Initializes attributes
 		this.collisionChecker = new CollisionChecker(this, true, false);
-		Class<?>[] interestingClasses = {TestPolygonObject.class};
-		this.collisionChecker.limitCheckedClassesTo(interestingClasses);
+		this.collisionChecker.limitCheckedClassesTo(new Class<?>[] {TestPolygonObject.class});
 	}
 	
 	
@@ -53,9 +45,6 @@ public class TestEscapingPolygonObject extends TestPolygonObject implements Coll
 	@Override
 	public void onCollisionEvent(CollisionEvent event)
 	{
-		if (event.isTarget(this))
-			event = event.fromTargetsPointOfView();
-		
 		Vector3D movement = event.getMTV();
 		
 		if (event.getTarget() instanceof TestEscapingPolygonObject)

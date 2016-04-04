@@ -6,21 +6,21 @@ import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.List;
 
-import genesis_event.Drawable;
-import genesis_event.EventSelector;
-import genesis_event.HandlerRelay;
-import genesis_event.KeyEvent;
-import genesis_event.KeyEvent.KeyEventType;
-import genesis_event.KeyListener;
-import genesis_util.HelpMath;
-import genesis_util.Line;
-import genesis_util.SimpleHandled;
-import genesis_util.Transformation;
-import genesis_util.Vector3D;
+import conflict_collision.Collidable;
 import conflict_collision.CollisionChecker;
 import conflict_collision.CollisionEvent;
 import conflict_collision.CollisionInformation;
 import conflict_collision.CollisionListener;
+import utopia.genesis.event.Drawable;
+import utopia.genesis.event.KeyEvent;
+import utopia.genesis.event.KeyEvent.KeyEventType;
+import utopia.genesis.event.KeyListener;
+import utopia.genesis.util.HelpMath;
+import utopia.genesis.util.Line;
+import utopia.genesis.util.Transformation;
+import utopia.genesis.util.Vector3D;
+import utopia.inception.event.EventSelector;
+import utopia.inception.util.SimpleHandled;
 
 /**
  * This is a movable character that can collide with the walls
@@ -28,7 +28,7 @@ import conflict_collision.CollisionListener;
  * @since 12.3.2015
  */
 public class TestCharacter extends SimpleHandled implements
-		CollisionListener, Drawable, KeyListener
+		CollisionListener, Collidable, Drawable, KeyListener
 {
 	// ATTRIBUTES	----------------------------
 	
@@ -44,13 +44,10 @@ public class TestCharacter extends SimpleHandled implements
 	
 	/**
 	 * Creates a new character to the given position
-	 * @param handlers The handlers that will handle the character
 	 * @param position The new position of the character
 	 */
-	public TestCharacter(HandlerRelay handlers, Vector3D position)
+	public TestCharacter(Vector3D position)
 	{
-		super(handlers);
-		
 		Vector3D[] vertices = {new Vector3D(30, 0), new Vector3D(-20, -20), 
 				new Vector3D(-20, 20)};
 		
@@ -159,10 +156,6 @@ public class TestCharacter extends SimpleHandled implements
 	{
 		//if (event.getMTV().equals(Vector3D.zeroVector()))
 		//	return;
-		
-		// Makes sure the event is from the right perspective
-		if (!event.getListener().equals(this))
-			event = event.fromTargetsPointOfView();
 		
 		// Calculates the collision point
 		//this.lastEdge = CollisionChecker.getCollisionEdge(getCollisionInformation().getPolygons().get(0).transformedWith(getTransformation()), event.getMTV());

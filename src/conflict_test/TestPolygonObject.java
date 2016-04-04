@@ -7,16 +7,14 @@ import java.awt.geom.AffineTransform;
 import conflict_collision.Collidable;
 import conflict_collision.CollisionInformation;
 import conflict_util.Polygon;
-import genesis_event.Drawable;
-import genesis_event.HandlerRelay;
-import genesis_util.SimpleHandled;
-import genesis_util.Transformable;
-import genesis_util.Transformation;
-import genesis_util.Vector3D;
+import utopia.genesis.event.Drawable;
+import utopia.genesis.util.Transformable;
+import utopia.genesis.util.Transformation;
+import utopia.genesis.util.Vector3D;
+import utopia.inception.util.SimpleHandled;
 
 /**
  * This class is made for simple polygon tests
- * 
  * @author Mikko Hilpinen
  * @since 9.12.2014
  */
@@ -35,12 +33,9 @@ public class TestPolygonObject extends SimpleHandled implements Transformable, D
 	/**
 	 * Creates a new polygon object
 	 * @param vertexAmount How many vertices / sides the polygon will have
-	 * @param handlers The handlers that will handle this object
 	 */
-	public TestPolygonObject(int vertexAmount, HandlerRelay handlers)
+	public TestPolygonObject(int vertexAmount)
 	{
-		super(handlers);
-		
 		// Initializes attributes
 		this.transformation = new Transformation();
 		
@@ -59,12 +54,9 @@ public class TestPolygonObject extends SimpleHandled implements Transformable, D
 	/**
 	 * Creates a new object
 	 * @param polygon The polygon this object uses
-	 * @param handlers The handlers that will handle this object
 	 */
-	public TestPolygonObject(Polygon polygon, HandlerRelay handlers)
+	public TestPolygonObject(Polygon polygon)
 	{
-		super(handlers);
-		
 		this.polygon = polygon;
 		this.transformation = new Transformation();
 		this.collisionInformation = new CollisionInformation(polygon.getVertices());

@@ -1,10 +1,9 @@
 package conflict_test;
 
-import genesis_event.EventSelector;
-import genesis_event.HandlerRelay;
-import genesis_event.MouseEvent;
-import genesis_event.MouseListener;
-import genesis_util.Vector3D;
+import utopia.genesis.event.MouseEvent;
+import utopia.genesis.event.MouseListener;
+import utopia.genesis.util.Vector3D;
+import utopia.inception.event.EventSelector;
 
 /**
  * This polygon positions itself around the cursor. It also checks if it collides with another 
@@ -27,13 +26,11 @@ public class TestMousePositionPolygonObject extends TestPolygonObject implements
 	/**
 	 * Creates a new object
 	 * @param vertexAmount How many vertices the polygon has
-	 * @param handlers The handlers that will handle this object
 	 * @param other The other polygon this one may collide with
 	 */
-	public TestMousePositionPolygonObject(int vertexAmount,
-			HandlerRelay handlers, TestPolygonObject other)
+	public TestMousePositionPolygonObject(int vertexAmount, TestPolygonObject other)
 	{
-		super(vertexAmount, handlers);
+		super(vertexAmount);
 		
 		// Intializes attributes
 		this.other = other;
