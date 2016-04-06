@@ -1,6 +1,7 @@
 package conflict_collision;
 
 import utopia.genesis.event.Actor;
+import utopia.genesis.event.ActorHandler;
 import utopia.inception.handling.Handler;
 import utopia.inception.handling.HandlerType;
 
@@ -28,6 +29,21 @@ public class CollisionHandler extends Handler<CollisionListener> implements Acto
 	{
 		// Initializes attributes
 		this.collidableHandler = collidableHandler;
+	}
+	
+	/**
+	 * Creates a new collision handler that will be ready to be used right away.
+	 * @param collidableHandler The collidable handler that keeps track of collidable objects
+	 * @param actorHandler The actor handler that will inform the handler about step events
+	 * @return A collision handler ready to be used
+	 */
+	public static CollisionHandler createCollisionHandler(CollidableHandler collidableHandler, 
+			ActorHandler actorHandler)
+	{
+		CollisionHandler handler = new CollisionHandler(collidableHandler);
+		if (actorHandler != null)
+			actorHandler.add(handler);
+		return handler;
 	}
 	
 	

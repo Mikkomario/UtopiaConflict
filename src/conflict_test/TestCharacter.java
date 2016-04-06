@@ -100,6 +100,9 @@ public class TestCharacter extends SimpleHandled implements
 		else if (e.getKey() == KeyEvent.RIGHT)
 			rotation = -3;
 		
+		rotation *= e.getDuration();
+		speed *= e.getDuration();
+		
 		Transformation change = null;
 		
 		if (!HelpMath.areApproximatelyEqual(rotation, 0))

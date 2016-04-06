@@ -1,13 +1,15 @@
 package conflict_test;
 
+import conflict_collision.CollidableHandler;
 import conflict_collision.CollisionHandler;
-import genesis_event.ActorHandler;
-import genesis_event.DrawableHandler;
-import genesis_event.HandlerRelay;
-import genesis_event.KeyListenerHandler;
-import genesis_util.Vector3D;
-import genesis_video.GamePanel;
-import genesis_video.GameWindow;
+import utopia.genesis.event.StepHandler;
+import utopia.genesis.util.Vector3D;
+import utopia.genesis.video.GamePanel;
+import utopia.genesis.video.GameWindow;
+import utopia.genesis.video.GamePanel.ScalingPolicy;
+import utopia.genesis.video.SplitPanel.ScreenSplit;
+import utopia.genesis.video.WindowKeyListenerHandler;
+import utopia.inception.handling.HandlerRelay;
 
 /**
  * This class tests conflict features in a simple game-like environment
@@ -32,21 +34,28 @@ public class ConflictTest2
 	 */
 	public static void main(String[] args)
 	{
+		Vector3D resolution = new Vector3D(800, 600);
+		
 		// Creates the window
-		GameWindow window = new GameWindow(new Vector3D(800, 600), "Conflict test 2", true, 
-				120, 20);
-		GamePanel panel = window.getMainPanel().addGamePanel();
+		GameWindow window = new GameWindow(resolution.toDimension(), "Conflict test 2", false, 
+				true, ScreenSplit.HORIZONTAL);
+		GamePanel panel = new GamePanel(resolution, ScalingPolicy.PROJECT, 120);
+		window.addGamePanel(panel);
 		
 		// Creates the handlers
+		StepHandler stepHandler = new StepHandler(120, 20);
+		CollidableHandler collidableHandler = new CollidableHandler();
 		HandlerRelay handlers = new HandlerRelay();
-		handlers.addHandler(new DrawableHandler(false, panel.getDrawer()));
-		handlers.addHandler(new ActorHandler(false, window.getHandlerRelay()));
-		handlers.addHandler(new KeyListenerHandler(false, window.getHandlerRelay()));
-		new CollisionHandler(false, window.getHandlerRelay(), handlers);
+		handlers.addHandler(stepHandler, panel.getDrawer(), 
+				WindowKeyListenerHandler.createWindowKeyListenerHandler(window, stepHandler), 
+				collidableHandler, 
+				CollisionHandler.createCollisionHandler(collidableHandler, stepHandler));
 		
 		// Creates the objects
-		new TestCharacter(handlers, new Vector3D(400, 300));
-		new TestWall(handlers, Vector3D.zeroVector(), new Vector3D(50, 400));
-		new TestWall(handlers, new Vector3D(600, 200), new Vector3D(75, 75));
+		handlers.add(new TestCharacter(new Vector3D(400, 300)),
+				new TestWall(Vector3D.zeroVector(), new Vector3D(50, 400)),
+				new TestWall(new Vector3D(600, 200), new Vector3D(75, 75)));
+		
+		stepHandler.start();
 	}
 }
