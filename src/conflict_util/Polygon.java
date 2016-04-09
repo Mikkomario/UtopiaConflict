@@ -708,6 +708,45 @@ public class Polygon
 	}
 	
 	/**
+	 * @return a circle centered to the polygon's center. The radius of the circle is the 
+	 * average between the vertex radiuses.
+	 */
+	public Circle toAverageCircle()
+	{
+		// Finds the center point between the vertices
+		Vector3D center = HelpMath.getAveragePoint(this.vertices);
+		
+		// Then finds the average radius
+		double averageRadius = 0;
+		for (Vector3D vertex : this.vertices)
+		{
+			averageRadius += HelpMath.pointDistance2D(vertex, center);
+		}
+		averageRadius /= getVertexAmount();
+		
+		return new Circle(center, averageRadius);
+	}
+	
+	/**
+	 * @return a circle centered to the polygon's center. All vertices of the polygon will 
+	 * reside inside the circle.
+	 */
+	public Circle toMaximumCircle()
+	{
+		Vector3D center = HelpMath.getAveragePoint(this.vertices);
+		
+		double maxRadius = 0;
+		for (Vector3D vertex : this.vertices)
+		{
+			double radius = HelpMath.pointDistance2D(center, vertex);
+			if (radius > maxRadius)
+				maxRadius = radius;
+		}
+		
+		return new Circle(center, maxRadius);
+	}
+	
+	/**
 	 * Checks if two projections of polygons overlap each other.
 	 * @param p1 The projection of the first polygon.
 	 * @param p2 The projection of the second polygon.
