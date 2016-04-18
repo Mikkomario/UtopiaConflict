@@ -75,6 +75,28 @@ public class Circle
 	// OTHER METHODS	---------
 	
 	/**
+	 * Checks whether the two circles are (practically) identical. The circles' centers may 
+	 * have different position on the z-axis and still be considered identical.
+	 * @param other Another circle
+	 * @return Are the two circles identical
+	 */
+	public boolean equalsIn2D(Circle other)
+	{
+		if (other == null)
+			return false;
+		
+		if (!HelpMath.areApproximatelyEqual(getRadius(), other.getRadius()))
+			return false;
+		
+		if (getCenter() == null)
+			return other.getCenter() == null;
+		else if (other.getCenter() == null)
+			return false;
+		
+		return getCenter().equalsIn2D(other.getCenter());
+	}
+	
+	/**
 	 * Transforms the circle from relative space to absolute space. The radius of the circle 
 	 * is scaled, but the circle can't be skewed or become ellipsoid.
 	 * @param transformation The transformation applied to the circle
