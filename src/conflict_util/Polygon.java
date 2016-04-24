@@ -2,7 +2,6 @@ package conflict_util;
 
 import java.awt.Graphics2D;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -90,138 +89,6 @@ public class Polygon
 	// OTHER METHODS	----------------------
 	
 	/**
-	 * Finds the edge that took part of a collision
-	 * @param p The polygon the edge is from
-	 * @param mtv The collision normal. The vector must point towards the polygon, not away 
-	 * from it
-	 * @return The polygon's edge that collided
-	 */
-	public static Line getCollisionEdge(Polygon p, Vector3D mtv)
-	{
-		Vector3D bestVertex = null;
-		double bestProduct = 0;
-		int bestIndex = -1;
-		
-		// Goes through all the vertices and finds the closest one
-		for (int i = 0; i < p.getVertexAmount(); i++)
-		{
-			Vector3D v = p.getVertex(i);
-			double product = v.dotProduct(mtv);
-			
-			// The best vertex has the smallest dot product with the collision normal
-			if (bestVertex == null || product < bestProduct)
-			{
-				bestVertex = v;
-				bestProduct = product;
-				bestIndex = i;
-			}
-		}
-		
-		// Finds the better edge that is connected to the vertex
-		Line left = new Line(bestVertex, p.getVertex(bestIndex - 1));
-		Line right = new Line(bestVertex, p.getVertex(bestIndex + 1));
-		
-		// The better edge is more perpendicular to the collision normal
-		if (Math.abs(left.toVector().dotProduct(mtv)) < 
-				Math.abs(right.toVector().dotProduct(mtv)))
-			return left;
-		else
-			return right;
-	}
-	
-	/**
-	 * Calculates the collision points between the two polygons
-	 * @param p1 The first polygon
-	 * @param p2 The second polygon
-	 * @param mtv1 The minimum translation vector for the first polygon (points towards 
-	 * the first polygon)
-	 * @return A list of collision points. There will be one or two collision points.
-	 */
-	public static List<Vector3D> getCollisionPoints(Polygon p1, Polygon p2, Vector3D mtv1)
-	{
-		Vector3D mtv2 = mtv1.reverse();
-		Line edge1 = getCollisionEdge(p1, mtv1);
-		Line edge2 = getCollisionEdge(p2, mtv2);
-		
-		Line referenceEdge = edge1;
-		Line incidentEdge = edge2;
-		Vector3D referenceMtv = mtv1;
-		
-		// The reference edge is the one that is more perpendicular to the collision normal
-		if (Math.abs(edge2.toVector().dotProduct(mtv1)) < 
-				Math.abs(edge1.toVector().dotProduct(mtv1)))
-		{
-			referenceEdge = edge2;
-			incidentEdge = edge1;
-			referenceMtv = mtv2;
-		}
-		
-		return clip(referenceEdge, incidentEdge, referenceMtv);
-	}
-	
-	private static List<Vector3D> clip(Line reference, Line incident, Vector3D referenceMtv)
-	{
-		// Clips from both sides
-		Line clipped = getClippedEdge(incident, reference.getStart(), reference.toVector());
-		if (clipped == null)
-			return new ArrayList<>();
-		
-		clipped = getClippedEdge(clipped, reference.getEnd(), reference.toVector().reverse());
-		if (clipped == null)
-			return new ArrayList<>();
-		
-		// Removes the edges from outside the third side
-		Vector3D lastNormal = reference.toVector().normal();
-		if (!HelpMath.areApproximatelyEqual(lastNormal.getZDirection(), 
-				referenceMtv.getZDirection()))
-			lastNormal = referenceMtv;
-		
-		List<Vector3D> collisionPoints = new ArrayList<>();
-		
-		double origin = reference.getStart().dotProduct(lastNormal);
-		double distance1 = clipped.getStart().dotProduct(lastNormal) - origin;
-		double distance2 = clipped.getEnd().dotProduct(lastNormal) - origin;
-		
-		if (distance1 >= 0)
-			collisionPoints.add(clipped.getStart());
-		if (distance2 >= 0)
-			collisionPoints.add(clipped.getEnd());
-		
-		return collisionPoints;
-	}
-	
-	private static Line getClippedEdge(Line edge, Vector3D edgePoint, 
-			Vector3D clippingPlaneNormal)
-	{
-		double origin = edgePoint.dotProduct(clippingPlaneNormal);
-		
-		double distance1 = edge.getStart().dotProduct(clippingPlaneNormal) - origin;
-		double distance2 = edge.getEnd().dotProduct(clippingPlaneNormal) - origin;
-		
-		List<Vector3D> clippedPoints = new ArrayList<>();
-		
-		// If the vertices are inside the desired area, preserves them
-		if (distance1 >= 0)
-			clippedPoints.add(edge.getStart());
-		if (distance2 >= 0)
-			clippedPoints.add(edge.getEnd());
-		
-		// If one of them wasn't, clips the edge
-		if (distance1 * distance2 < 0)
-		{
-			Vector3D edgeVector = edge.toVector();
-			double u = distance1 / (distance1 - distance2);
-			edgeVector = edgeVector.times(u).plus(edge.getStart());
-			clippedPoints.add(edgeVector);
-		}
-		
-		if (clippedPoints.size() >= 2)
-			return new Line(clippedPoints.get(0), clippedPoints.get(1));
-		else
-			return null;
-	}
-	
-	/**
 	 * @return How many vertexes does this polygon have
 	 */
 	public int getVertexAmount()
@@ -249,6 +116,21 @@ public class Polygon
 	public Line getEdge(int index)
 	{
 		return new Line(getVertex(index), getVertex(index + 1));
+	}
+	
+	/**
+	 * @return The edges in the polygon. The edges are calculated each time this method is 
+	 * called and altering them won't affect the polygon in any way.
+	 */
+	public Line[] getEdges()
+	{
+		Line[] edges = new Line[getVertexAmount()];
+		for (int i = 0; i < edges.length; i++)
+		{
+			edges[i] = getEdge(i);
+		}
+		
+		return edges;
 	}
 	
 	/**
@@ -568,106 +450,9 @@ public class Polygon
 		}
 		
 		// Picks two projected points, the smallest and the largest
-		projections.sort(new ProjectionComparator());
+		projections.sort(new CollisionCheck.ProjectionComparator());
 		
 		return new Line(projections.get(0), projections.get(projections.size() - 1));
-	}
-	
-	/**
-	 * Checks if the projections of the two vectors overlap each other when using the given 
-	 * axis. If this is false, the polygon's are certainly not colliding with each other.
-	 * @param other The other polygon
-	 * @param axis The axis to which the polygons are projected to
-	 * @return Are the projections of the polygons overlapping each other
-	 */
-	public boolean overlapsAlongAxis(Polygon other, Vector3D axis)
-	{
-		return projectionsOverlap(getProjection(axis), other.getProjection(axis));
-	}
-	
-	/**
-	 * Checks if the projections of the two vectors overlap each other when using the given 
-	 * axis. Returns the MTV applicable for this axis from the perspective of this polygon. 
-	 * If there is no overlap, returns null (the polygons can't be overlapping each other)
-	 * @param other The other polygon
-	 * @param axis The axis to which the polygons are projected to
-	 * @return The movement vector that will take this polygon outside the other polygon. Null 
-	 * if there is no overlapping.
-	 */
-	public Vector3D overlapsAlongAxisMTV(Polygon other, Vector3D axis)
-	{
-		return projectionsOverlapMTV(getProjection(axis), other.getProjection(axis));
-	}
-	
-	/**
-	 * Checks if the two polygons collide with each other
-	 * @param other The other polygon
-	 * @return Do the two polygons collide with each other
-	 */
-	public boolean collidesWith(Polygon other)
-	{
-		// Checks each axis, if there's an overlap on all of them, there is a collision
-		for (Vector3D axis : getCollisionAxes())
-		{
-			if (!overlapsAlongAxis(other, axis))
-				return false;
-		}
-		for (Vector3D axis : other.getCollisionAxes())
-		{
-			if (!overlapsAlongAxis(other, axis))
-				return false;
-		}
-		
-		return true;
-	}
-	
-	/**
-	 * Checks if the two polygons collide with each other and returns the minimum translation 
-	 * vector that gets this polygon outside the other polygon.
-	 * @param other The other polygon
-	 * @return The minimum translation vector that gets this polygon outside the other vector 
-	 * or null if the polygon's don't collide
-	 */
-	public Vector3D collidesWithMTV(Polygon other)
-	{
-		Vector3D mtv = null;
-		double smallestOverlap = -1;
-		
-		// Checks each axis, if there's an overlap on all of them, there is a collision
-		for (Vector3D axis : getCollisionAxes())
-		{
-			Vector3D overlapVector = overlapsAlongAxisMTV(other, axis);
-			
-			if (overlapVector == null)
-				return null;
-			
-			double overlapAmount = overlapVector.getLength();
-			
-			if (smallestOverlap < 0 || overlapAmount < smallestOverlap)
-			{
-				mtv = overlapVector;
-				smallestOverlap = overlapAmount;
-			}
-		}
-		// TODO: WET WET
-		// I know this is not dry, but I wouldn't want to create new lists at every check
-		for (Vector3D axis : other.getCollisionAxes())
-		{
-			Vector3D overlapVector = overlapsAlongAxisMTV(other, axis);
-			
-			if (overlapVector == null)
-				return null;
-			
-			double overlapAmount = overlapVector.getLength();
-			
-			if (smallestOverlap < 0 || overlapAmount < smallestOverlap)
-			{
-				mtv = overlapVector;
-				smallestOverlap = overlapAmount;
-			}
-		}
-		
-		return mtv;
 	}
 	
 	/**
@@ -746,67 +531,9 @@ public class Polygon
 		return new Circle(center, maxRadius);
 	}
 	
-	/**
-	 * Checks if two projections of polygons overlap each other.
-	 * @param p1 The projection of the first polygon.
-	 * @param p2 The projection of the second polygon.
-	 * @return do the two projections overlap each other
-	 */
-	public static boolean projectionsOverlap(Line p1, Line p2)
-	{
-		ProjectionComparator comparator = new ProjectionComparator();
-		
-		if (comparator.compare(p1.getEnd(), p2.getStart()) < 0 || 
-				comparator.compare(p2.getEnd(), p1.getStart()) < 0)
-			return false;
-		
-		return true;
-		
-		// If either of the points in p2 is between the points in p1, there is a collision
-		/*
-		if (comparator.compare(p1.getStart(), p2.getEnd()) <= 0 && 
-				comparator.compare(p1.getStart(), p2.getStart()) >= 0)
-			return true;
-		if (comparator.compare(p1.getEnd(), p2.getEnd()) <= 0 && 
-				comparator.compare(p1.getEnd(), p2.getStart()) >= 0)
-			return true;
-		
-		return false;
-		*/
-	}
 	
-	/**
-	 * Finds the minimum translation vector (MTV) that makes the projection p1 move outside 
-	 * the projection p2. If there is no overlapping, null is returned.
-	 * @param p1 The projection of the first polygon.
-	 * @param p2 The projection of the second polygon.
-	 * @return The MTV from the perspective of the first projection, null if the projections 
-	 * don't overlap each other
-	 */
-	public static Vector3D projectionsOverlapMTV(Line p1, Line p2)
-	{
-		ProjectionComparator comparator = new ProjectionComparator();
-		
-		// If there is no overlap, returns null
-		if (comparator.compare(p1.getEnd(), p2.getStart()) < 0 || 
-				comparator.compare(p2.getEnd(), p1.getStart()) < 0)
-			return null;
-		
-		// Otherwise checks if there is containment
-		/*
-		if (comparator.compare(p1.getEnd(), p2.getStart()) >= 0 && 
-				comparator.compare(p2.getEnd(), p1.getStart()) >= 0)
-		{
-			// TODO: Implement once the basic MTV has been tested
-		}
-		*/
-			
-		// Otherwise just returns the easiest way out (MTV)
-		if (comparator.compare(p1.getStart(), p2.getStart()) < 0)
-			return p2.getStart().minus(p1.getEnd());
-		else
-			return p2.getEnd().minus(p1.getStart());
-	}
+	
+	
 	
 	/**
 	 * Creates a polygon by parsing it from a string.
@@ -893,20 +620,6 @@ public class Polygon
 		return newAxes;
 	}
 	
-	
-	// SUBCLASSES	----------------------
-	
-	private static class ProjectionComparator implements Comparator<Vector3D>
-	{
-		@Override
-		public int compare(Vector3D o1, Vector3D o2)
-		{
-			if (HelpMath.areApproximatelyEqual(o1.getFirst(), o2.getFirst()))
-				return (int) (100 * (o1.getSecond() - o2.getSecond()));
-			else
-				return (int) (100* (o1.getFirst() - o2.getFirst()));
-		}	
-	}
 	
 	
 	// ENUMS	--------------------------

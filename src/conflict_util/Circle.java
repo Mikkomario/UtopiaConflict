@@ -75,6 +75,56 @@ public class Circle
 	// OTHER METHODS	---------
 	
 	/**
+	 * Creates a new circle with the same radius
+	 * @param center The new circle's center
+	 * @return A new circle with the same radius with this one
+	 */
+	public Circle withCenter(Vector3D center)
+	{
+		return new Circle(center, getRadius());
+	}
+	
+	/**
+	 * Creates a new circle with the same center point
+	 * @param radius The radius of the new circle
+	 * @return A new circle with the same center point with this one
+	 */
+	public Circle withRadius(double radius)
+	{
+		return new Circle(getCenter(), radius);
+	}
+	
+	/**
+	 * Creates a new circle with an altered center point
+	 * @param vector The translation vector applied to the circle's center point
+	 * @return a translated version of this circle
+	 */
+	public Circle translated(Vector3D vector)
+	{
+		return withCenter(getCenter().plus(vector));
+	}
+	
+	/**
+	 * Scales the radius of the circle
+	 * @param scaling How much the circle's radius is scaled
+	 * @return The scaled circle
+	 */
+	public Circle scaled(double scaling)
+	{
+		return withRadius(getRadius() * scaling);
+	}
+	
+	/**
+	 * Widens or shrinks the circle's radius
+	 * @param radiusIncrease How much the circle's radius is increased
+	 * @return The altered circle
+	 */
+	public Circle widened(double radiusIncrease)
+	{
+		return withRadius(getRadius() + radiusIncrease);
+	}
+	
+	/**
 	 * Checks whether the two circles are (practically) identical. The circles' centers may 
 	 * have different position on the z-axis and still be considered identical.
 	 * @param other Another circle
@@ -113,6 +163,22 @@ public class Circle
 				transformation.getScaling().getSecond()) / 2;
 		
 		return new Circle(transformedCenter, scaledRadius);
+	}
+	
+	/**
+	 * @return The top left corner of the circle's bounding box
+	 */
+	public Vector3D getTopLeft()
+	{
+		return getCenter().minus(new Vector3D(getRadius(), getRadius()));
+	}
+	
+	/**
+	 * @return The bottom right corner of the circle's bounding box
+	 */
+	public Vector3D getBottomRight()
+	{
+		return getCenter().plus(new Vector3D(getRadius(), getRadius()));
 	}
 	
 	/**

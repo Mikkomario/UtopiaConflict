@@ -1,5 +1,8 @@
 package conflict_util;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import utopia.genesis.util.Vector3D;
 
 /**
@@ -14,7 +17,7 @@ public class CollisionData
 	
 	private boolean collides;
 	private Vector3D mtv;
-	private Vector3D[] collisionPoints;
+	private List<Vector3D> collisionPoints;
 	
 	
 	// CONSTRUCTOR	-----------------------------
@@ -23,13 +26,22 @@ public class CollisionData
 	 * Creates a new collisionData that holds information about the collision
 	 * @param collides Did a collision occur or not
 	 * @param mtv The minimum translation vector calculated during the operation
-	 * @param collisionPoints The collision points calculated during the operation
+	 * @param collisionPoints The collision points calculated during the operation (optional)
 	 */
-	public CollisionData(boolean collides, Vector3D mtv, Vector3D[] collisionPoints)
+	public CollisionData(boolean collides, Vector3D mtv, List<Vector3D> collisionPoints)
 	{
 		this.collides = collides;
 		this.mtv = mtv;
 		this.collisionPoints = collisionPoints;
+	}
+	
+	/**
+	 * This method may be used for constructing collision data of a non-collision
+	 * @return CollisionData for no collision
+	 */
+	public static CollisionData noCollision()
+	{
+		return new CollisionData(false, null, null);
 	}
 	
 	
@@ -54,8 +66,10 @@ public class CollisionData
 	/**
 	 * @return The collision points calculated during the check
 	 */
-	public Vector3D[] getCollisionPoints()
+	public List<Vector3D> getCollisionPoints()
 	{
+		if (this.collisionPoints == null)
+			this.collisionPoints = new ArrayList<>();
 		return this.collisionPoints;
 	}
 }

@@ -1,8 +1,10 @@
 package conflict_collision;
 
 import java.awt.Graphics2D;
+import java.util.ArrayList;
 import java.util.List;
 
+import conflict_util.Circle;
 import conflict_util.Polygon;
 import utopia.genesis.util.Vector3D;
 
@@ -18,88 +20,123 @@ public class CollisionInformation
 	
 	// TODO: Add support for circles and "brach's bubble form"
 	
-	private double radius;
-	private List<Polygon> polygons;
-	private Class<?>[] supportedListeners;
+	private List<Circle> circles = null;
+	private List<Polygon> polygons = null;
+	private Class<?>[] supportedListeners = null;
+	private Polygon boundingBox = null;
+	private boolean usesBoundingBox = false;
 	
 	
 	// CONSTRUCTOR	-----------------------------
 	
 	/**
 	 * Creates new collision information based on the given point data. This works best 
-	 * among other objects that have provided polygon data. The origin of the 
-	 * object is expected to be at (0, 0).
+	 * among other objects that have provided polygon data.
 	 * @param vertices The vertices that form the object's collision polygon
+	 * @param origin The origin point (x, y) of the collision information. The vertices will 
+	 * be translated accordingly. Default origin is (0, 0)
 	 */
-	public CollisionInformation(Vector3D[] vertices)
+	public CollisionInformation(Vector3D origin, Vector3D... vertices)
 	{
-		// Creates the polygon(s) and calculates radius
-		this.radius = -1;
-		
-		for (int i = 0; i < vertices.length; i++)
+		// Creates the polygon(s)
+		Vector3D[] translatedVertices;
+		if (origin == null || origin.equals(Vector3D.zeroVector()))
+			translatedVertices = vertices;
+		else
 		{
-			double r = vertices[i].getLength();
-			if (r > this.radius)
-				this.radius = r;
+			translatedVertices = new Vector3D[vertices.length];
+			for (int i = 0; i < vertices.length; i++)
+			{
+				translatedVertices[i] = vertices[i].minus(origin);
+			}
 		}
 		
-		this.polygons = new Polygon(vertices).toConvexPolygons();
-		this.supportedListeners = null;
+		this.polygons = new Polygon(translatedVertices).toConvexPolygons();
+		this.usesBoundingBox = this.polygons.size() > 1;
 	}
 
 	/**
-	 * Creates new collision information based on just object radius. This constructor 
-	 * should be used if polygon data can't be provided or isn't needed. It is best used 
-	 * with other circular objects. The origin is considered to be at (0, 0).
-	 * @param radius The object's radius.
+	 * Creates new collision information based on circular forms. This constructor 
+	 * should be used if polygon data can't be provided or isn't needed.
+	 * @param origin The origin of the collision information. The circles are translated 
+	 * accordingly. Default origin is (0, 0)
+	 * @param circles The circles that form this information
 	 */
-	public CollisionInformation(int radius)
+	public CollisionInformation(Vector3D origin, Circle... circles)
 	{
-		this.radius = radius;
-		this.polygons = null;
-		this.supportedListeners = null;
+		this.circles = new ArrayList<>();
+		for (Circle circle : circles)
+		{
+			if (origin == null)
+				this.circles.add(circle);
+			else
+				this.circles.add(circle.translated(origin.reverse()));
+		}
+		
+		this.usesBoundingBox = true;
 	}
 	
 	/**
-	 * Creates new collision information that contains both the polygon and radius data. 
-	 * This can be used among both polygon-based and circular objects. The origin of the 
-	 * object is considered to be at (0, 0).
+	 * Creates new collision information that contains both polygon and circle data. 
+	 * Both shapes are taken into account when checking for collision.
+	 * @param origin The origin of the vertices / circles. Translation added accordingly. 
+	 * Default at (0, 0).
 	 * @param vertices The vertices that form the object's polygon data.
-	 * @param radius The object's radius.
+	 * @param circles The circles that are used in the collision checking as well
 	 */
-	public CollisionInformation(Vector3D[] vertices, int radius)
+	public CollisionInformation(Vector3D origin, Vector3D[] vertices, Circle[] circles)
 	{
-		this.radius = radius;
-		this.polygons = new Polygon(vertices).toConvexPolygons();
-		this.supportedListeners = null;
+		this.circles = new ArrayList<>();
+		for (Circle circle : circles)
+		{
+			if (origin == null)
+				this.circles.add(circle);
+			else
+				this.circles.add(circle.translated(origin.reverse()));
+		}
+		
+		// Creates the polygon(s)
+		Vector3D[] translatedVertices;
+		if (origin == null || origin.equals(Vector3D.zeroVector()))
+			translatedVertices = vertices;
+		else
+		{
+			translatedVertices = new Vector3D[vertices.length];
+			for (int i = 0; i < vertices.length; i++)
+			{
+				translatedVertices[i] = vertices[i].minus(origin);
+			}
+		}
+		
+		this.polygons = new Polygon(translatedVertices).toConvexPolygons();
+		this.usesBoundingBox = true;
 	}
 	
 	
 	// GETTERS & SETTERS	---------------------------
 	
-	/**
-	 * @return The object's radius
-	 */
-	public double getRadius()
+	public List<? extends Circle> getCircles()
 	{
-		return this.radius;
+		if (usesCircles())
+			return this.circles;
+		else
+			return new ArrayList<>();
 	}
 	
-	/**
-	 * Changes the object's collision radius
-	 * @param newRadius The new collision radius
-	 */
-	public void setRadius(double newRadius)
+	public boolean usesCircles()
 	{
-		this.radius = newRadius;
+		return this.circles != null;
 	}
 	
 	/**
 	 * @return The object's collision polygons
 	 */
-	public List<Polygon> getPolygons()
+	public List<? extends Polygon> getPolygons()
 	{
-		return this.polygons;
+		if (usesPolygons())
+			return this.polygons;
+		else
+			return new ArrayList<>();
 	}
 	
 	/**
@@ -108,6 +145,46 @@ public class CollisionInformation
 	public boolean usesPolygons()
 	{
 		return this.polygons != null;
+	}
+	
+	public Polygon getBoundingBox()
+	{
+		if (this.boundingBox == null)
+		{
+			boolean first = true;
+			double minX = 0, minY = 0;
+			double maxX = 0, maxY = 0;
+			
+			if (usesCircles())
+			{
+				for (Circle circle : this.circles)
+				{
+					Vector3D topLeft = circle.getTopLeft();
+					Vector3D bottomRight = circle.getBottomRight();
+					
+					if (first)
+					{
+						first = false;
+						minX = topLeft.getFirst();
+						maxX = bottomRight.getFirst();
+						minY = topLeft.getSecond();
+						maxY = bottomRight.getSecond();
+					}
+					Vector3D cTopLeft = circle.getTopLeft();
+					Vector3D cBottomRight = circle.getBottomRight();
+					
+					if (topLeft == null)
+						topLeft = cTopLeft;
+					else
+					{
+						if (cTopLeft.getFirst() < topLeft.getFirst())
+							topLeft = new Vector3D(cTopLeft.getFi)
+					}
+				}
+			}
+		}
+		
+		return this.boundingBox;
 	}
 	
 	

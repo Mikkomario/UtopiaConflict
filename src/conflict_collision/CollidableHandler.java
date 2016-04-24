@@ -30,6 +30,7 @@ public class CollidableHandler extends Handler<Collidable>
 	protected boolean handleObject(Collidable h)
 	{
 		// An object can't collide with itself
+		// TODO: Actually should check against the listener's collidable, since it may be different
 		if (h == null || h == this.lastListener)
 			return true;
 		
