@@ -309,22 +309,9 @@ public class Polygon
 		if (this.bottomRight == null)
 		{
 			if (getVertexAmount() == 0)
-				return Vector3D.zeroVector();
-			
-			double largestX = getVertex(0).getFirst();
-			double largestY = getVertex(0).getSecond();
-			
-			for (int i = 1; i < getVertexAmount(); i++)
-			{
-				Vector3D vertex = getVertex(i);
-				
-				if (vertex.getFirst() > largestX)
-					largestX = vertex.getFirst();
-				if (vertex.getSecond() > largestY)
-					largestY = vertex.getSecond();
-			}
-			
-			this.bottomRight = new Vector3D(largestX, largestY);
+				return Vector3D.ZERO;
+			else
+				return HelpMath.max(this.vertices);
 		}
 		
 		return this.bottomRight;
@@ -339,22 +326,9 @@ public class Polygon
 		if (this.topLeft == null)
 		{
 			if (getVertexAmount() == 0)
-				return Vector3D.zeroVector();
-			
-			double smallestX = getVertex(0).getFirst();
-			double smallestY = getVertex(0).getSecond();
-			
-			for (int i = 1; i < getVertexAmount(); i++)
-			{
-				Vector3D vertex = getVertex(i);
-				
-				if (vertex.getFirst() < smallestX)
-					smallestX = vertex.getFirst();
-				if (vertex.getSecond() < smallestY)
-					smallestY = vertex.getSecond();
-			}
-			
-			this.topLeft = new Vector3D(smallestX, smallestY);
+				return Vector3D.ZERO;
+			else
+				return HelpMath.min(this.vertices);
 		}
 		
 		return this.topLeft;
@@ -401,12 +375,12 @@ public class Polygon
 		// Finds the two most close points
 		while (closestPoints.size() > 2)
 		{
-			double farthestRange = closestPoints.get(0).getSecond();
+			double farthestRange = closestPoints.get(0).getY();
 			int farthestIndex = 0;
 			
 			for (int i = 1; i < 3; i++)
 			{
-				double range = closestPoints.get(i).getSecond();
+				double range = closestPoints.get(i).getY();
 				if (range > farthestRange)
 				{
 					farthestRange = range;
@@ -419,14 +393,14 @@ public class Polygon
 		
 		// Checks that the points are in right order (the first and the last go the 
 		// wrong way (index) by default)
-		if (closestPoints.get(1).getFirstInt() - closestPoints.get(0).getFirstInt() > 
+		if (closestPoints.get(1).getXInt() - closestPoints.get(0).getXInt() > 
 				getVertexAmount() / 2)
 			closestPoints.add(closestPoints.remove(0));
 		
 		double dir1 = HelpMath.checkDirection(point.minus(
-				getVertex(closestPoints.get(0).getFirstInt())).getZDirection());
+				getVertex(closestPoints.get(0).getXInt())).getZDirection());
 		double dir2 = HelpMath.checkDirection(getVertex(
-				closestPoints.get(1).getFirstInt()).minus(point).getZDirection());
+				closestPoints.get(1).getXInt()).minus(point).getZDirection());
 		double turn = HelpMath.checkDirection(dir2 - dir1);
 		
 		// If a line going through the three points would make the polygon non-convex, 
@@ -463,8 +437,8 @@ public class Polygon
 	{
 		for (int i = 0; i < getVertexAmount(); i++)
 		{
-			g2d.drawLine(getVertex(i).getFirstInt(), getVertex(i).getSecondInt(), 
-					getVertex(i + 1).getFirstInt(), getVertex(i + 1).getSecondInt());
+			g2d.drawLine(getVertex(i).getXInt(), getVertex(i).getYInt(), 
+					getVertex(i + 1).getXInt(), getVertex(i + 1).getYInt());
 		}
 	}
 	
@@ -476,8 +450,8 @@ public class Polygon
 	{
 		Vector3D topLeft = getTopLeft(), dimensions = getDimensions();
 		
-		g2d.drawRect(topLeft.getFirstInt(), topLeft.getSecondInt(), dimensions.getFirstInt(), 
-				dimensions.getSecondInt());
+		g2d.drawRect(topLeft.getXInt(), topLeft.getYInt(), dimensions.getXInt(), 
+				dimensions.getYInt());
 	}
 	
 	/**
@@ -531,10 +505,6 @@ public class Polygon
 		return new Circle(center, maxRadius);
 	}
 	
-	
-	
-	
-	
 	/**
 	 * Creates a polygon by parsing it from a string.
 	 * @param s The string that contains the polygon's vertex data. The vertices are separated 
@@ -562,9 +532,9 @@ public class Polygon
 	 */
 	public static Vector3D[] getRectangleVertices(Vector3D topLeft, Vector3D bottomRight)
 	{
-		Vector3D[] vertices = {topLeft, new Vector3D(topLeft.getFirst(), 
-				bottomRight.getSecond()), bottomRight, new Vector3D(bottomRight.getFirst(), 
-				topLeft.getSecond())};
+		Vector3D[] vertices = {topLeft, new Vector3D(topLeft.getX(), 
+				bottomRight.getY()), bottomRight, new Vector3D(bottomRight.getX(), 
+				topLeft.getY())};
 		return vertices;
 	}
 	
@@ -619,7 +589,6 @@ public class Polygon
 		
 		return newAxes;
 	}
-	
 	
 	
 	// ENUMS	--------------------------

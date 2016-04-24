@@ -1,5 +1,7 @@
 package conflict_util;
 
+import java.awt.Graphics2D;
+
 import utopia.genesis.util.HelpMath;
 import utopia.genesis.util.Line;
 import utopia.genesis.util.Transformation;
@@ -159,8 +161,8 @@ public class Circle
 		Vector3D transformedCenter = transformation.transform(getCenter());
 		
 		// Scales the radius as well
-		double scaledRadius = getRadius() * (transformation.getScaling().getFirst() + 
-				transformation.getScaling().getSecond()) / 2;
+		double scaledRadius = getRadius() * (transformation.getScaling().getX() + 
+				transformation.getScaling().getY()) / 2;
 		
 		return new Circle(transformedCenter, scaledRadius);
 	}
@@ -253,6 +255,17 @@ public class Circle
 	}
 	
 	/**
+	 * Draws the circle with the graphics object
+	 * @param g2d The object that will draw the circle
+	 */
+	public void drawCircle(Graphics2D g2d)
+	{
+		g2d.drawOval((int) (getCenter().getX() - getRadius()), 
+				(int) (getCenter().getY() - getRadius()), 
+				(int) (getRadius() * 2), (int) (getRadius() * 2));
+	}
+	
+	/**
 	 * Checks whether the circle can be transformed without a problem. When transforming 
 	 * circles with shear or uneven scale transformations, the end results may vary.
 	 * @param transformation A transformation
@@ -262,8 +275,8 @@ public class Circle
 	 */
 	public static boolean supportsTransformation(Transformation transformation)
 	{
-		return HelpMath.areApproximatelyEqual(transformation.getScaling().getFirst(), 
-				transformation.getScaling().getSecond()) && 
-				transformation.getShear().equalsIn2D(Vector3D.zeroVector());
+		return HelpMath.areApproximatelyEqual(transformation.getScaling().getX(), 
+				transformation.getScaling().getY()) && 
+				transformation.getShear().equalsIn2D(Vector3D.ZERO);
 	}
 }

@@ -6,6 +6,7 @@ import java.util.List;
 
 import conflict_util.Circle;
 import conflict_util.Polygon;
+import utopia.genesis.util.HelpMath;
 import utopia.genesis.util.Vector3D;
 
 /**
@@ -26,6 +27,9 @@ public class CollisionInformation
 	private Polygon boundingBox = null;
 	private boolean usesBoundingBox = false;
 	
+	private int minCircleVertexAmount = 8;
+	private int maxcircleEdgeLength = -1;
+	
 	
 	// CONSTRUCTOR	-----------------------------
 	
@@ -40,7 +44,7 @@ public class CollisionInformation
 	{
 		// Creates the polygon(s)
 		Vector3D[] translatedVertices;
-		if (origin == null || origin.equals(Vector3D.zeroVector()))
+		if (origin == null || origin.equals(Vector3D.ZERO))
 			translatedVertices = vertices;
 		else
 		{
@@ -60,10 +64,18 @@ public class CollisionInformation
 	 * should be used if polygon data can't be provided or isn't needed.
 	 * @param origin The origin of the collision information. The circles are translated 
 	 * accordingly. Default origin is (0, 0)
+	 * @param minCircleVertexAmount How many vertices there needs to be at least when 
+	 * transforming one of the circles into a polygon. Use a negative number for no limit.
+	 * @param maxCircleEdgeLength How long can a single edge be when a circle is transformed 
+	 * into a polygon. Use negative number for no limit.
 	 * @param circles The circles that form this information
 	 */
-	public CollisionInformation(Vector3D origin, Circle... circles)
+	public CollisionInformation(Vector3D origin, int minCircleVertexAmount, 
+			int maxCircleEdgeLength, Circle... circles)
 	{
+		this.minCircleVertexAmount = minCircleVertexAmount;
+		this.maxcircleEdgeLength = maxCircleEdgeLength;
+		
 		this.circles = new ArrayList<>();
 		for (Circle circle : circles)
 		{
@@ -82,10 +94,17 @@ public class CollisionInformation
 	 * @param origin The origin of the vertices / circles. Translation added accordingly. 
 	 * Default at (0, 0).
 	 * @param vertices The vertices that form the object's polygon data.
+	 * @param minCircleVertexAmount How many vertices there needs to be at least when 
+	 * transforming one of the circles into a polygon. Use a negative number for no limit.
+	 * @param maxCircleEdgeLength How long can a single edge be when a circle is transformed 
+	 * into a polygon. Use negative number for no limit.
 	 * @param circles The circles that are used in the collision checking as well
 	 */
-	public CollisionInformation(Vector3D origin, Vector3D[] vertices, Circle[] circles)
+	public CollisionInformation(Vector3D origin, Vector3D[] vertices, 
+			int minCircleVertexAmount, int maxCircleEdgeLength, Circle[] circles)
 	{
+		this.minCircleVertexAmount = minCircleVertexAmount;
+		this.maxcircleEdgeLength = maxCircleEdgeLength;
 		this.circles = new ArrayList<>();
 		for (Circle circle : circles)
 		{
@@ -97,7 +116,7 @@ public class CollisionInformation
 		
 		// Creates the polygon(s)
 		Vector3D[] translatedVertices;
-		if (origin == null || origin.equals(Vector3D.zeroVector()))
+		if (origin == null || origin.equals(Vector3D.ZERO))
 			translatedVertices = vertices;
 		else
 		{
@@ -115,6 +134,9 @@ public class CollisionInformation
 	
 	// GETTERS & SETTERS	---------------------------
 	
+	/**
+	 * @return The circles defined in this collision information
+	 */
 	public List<? extends Circle> getCircles()
 	{
 		if (usesCircles())
@@ -123,6 +145,23 @@ public class CollisionInformation
 			return new ArrayList<>();
 	}
 	
+	/**
+	 * @return The collision information's circles transformed into polygon format
+	 */
+	public List<Polygon> getCirclePolygons()
+	{
+		List<Polygon> polygons = new ArrayList<>();
+		for (Circle circle : this.circles)
+		{
+			polygons.add(circle.toPolygon(getMinCircleVertexAmount(), getMaxCircleEdgeLength()));
+		}
+		
+		return polygons;
+	}
+	
+	/**
+	 * @return Does the collision information contain any circle data
+	 */
 	public boolean usesCircles()
 	{
 		return this.circles != null;
@@ -147,44 +186,66 @@ public class CollisionInformation
 		return this.polygons != null;
 	}
 	
+	/**
+	 * @return The minimum amount of vertices for each circle when transforming them into 
+	 * polygons. Negative if no limit.
+	 */
+	public int getMinCircleVertexAmount()
+	{
+		return this.minCircleVertexAmount;
+	}
+	
+	/**
+	 * @return The maximum length of each circle vertex when transforming them into polygons. 
+	 * Negative if no limit.
+	 */
+	public int getMaxCircleEdgeLength()
+	{
+		return this.maxcircleEdgeLength;
+	}
+	
+	/**
+	 * @return The bounding box drawn around the collision shape(s). All collidable area 
+	 * fits inside this bounding box.
+	 */
 	public Polygon getBoundingBox()
 	{
 		if (this.boundingBox == null)
 		{
-			boolean first = true;
-			double minX = 0, minY = 0;
-			double maxX = 0, maxY = 0;
-			
+			List<Vector3D> mins = new ArrayList<>();
+			List<Vector3D> maxes = new ArrayList<>();
 			if (usesCircles())
 			{
 				for (Circle circle : this.circles)
 				{
-					Vector3D topLeft = circle.getTopLeft();
-					Vector3D bottomRight = circle.getBottomRight();
-					
-					if (first)
-					{
-						first = false;
-						minX = topLeft.getFirst();
-						maxX = bottomRight.getFirst();
-						minY = topLeft.getSecond();
-						maxY = bottomRight.getSecond();
-					}
-					Vector3D cTopLeft = circle.getTopLeft();
-					Vector3D cBottomRight = circle.getBottomRight();
-					
-					if (topLeft == null)
-						topLeft = cTopLeft;
-					else
-					{
-						if (cTopLeft.getFirst() < topLeft.getFirst())
-							topLeft = new Vector3D(cTopLeft.getFi)
-					}
+					mins.add(circle.getTopLeft());
+					maxes.add(circle.getBottomRight());
 				}
 			}
+			if (usesPolygons())
+			{
+				for (Polygon polygon : this.polygons)
+				{
+					mins.add(polygon.getTopLeft());
+					maxes.add(polygon.getBottomRight());
+				}
+			}
+			
+			this.boundingBox = new Polygon(Polygon.getRectangleVertices(
+					HelpMath.min(mins.toArray(new Vector3D[0])), 
+					HelpMath.max(maxes.toArray(new Vector3D[0]))));
 		}
 		
 		return this.boundingBox;
+	}
+	
+	/**
+	 * @return Should bounding box be used when checking for collision with this information. 
+	 * Using bounding box is recommended for complex shapes
+	 */
+	public boolean usesBoundingBox()
+	{
+		return this.usesBoundingBox;
 	}
 	
 	
@@ -199,14 +260,18 @@ public class CollisionInformation
 	{
 		if (usesPolygons())
 		{
-			for (Polygon p : getPolygons())
+			for (Polygon p : this.polygons)
 			{
 				p.drawPolygon(g2d);
 			}
 		}
-		else
-			g2d.drawOval((int) getRadius() / 2, (int) getRadius() / 2, (int) getRadius(), 
-					(int) getRadius());
+		if (usesCircles())
+		{
+			for (Circle c : this.circles)
+			{
+				c.drawCircle(g2d);
+			}
+		}
 	}
 	
 	/**
@@ -244,6 +309,43 @@ public class CollisionInformation
 		{
 			if (this.supportedListeners[i].isInstance(o))
 				return true;
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Checks whether the provided (relative) point lies within the collidable area
+	 * @param point The (relative) point that is checked
+	 * @return Does the point lie in the collision area
+	 */
+	public boolean pointIsWithin(Vector3D point)
+	{
+		// May first check the bounding box
+		if (usesBoundingBox())
+		{
+			if (!getBoundingBox().pointisWithin(point))
+				return false;
+		}
+		
+		// Then checks the circles
+		if (usesCircles())
+		{
+			for (Circle circle : this.circles)
+			{
+				if (circle.pointIsWithin(point))
+					return true;
+			}
+		}
+		
+		// Then checks the polygons
+		if (usesPolygons())
+		{
+			for (Polygon polygon : this.polygons)
+			{
+				if (polygon.pointisWithin(point))
+					return true;
+			}
 		}
 		
 		return false;

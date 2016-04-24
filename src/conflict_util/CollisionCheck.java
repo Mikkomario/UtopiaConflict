@@ -1,11 +1,14 @@
 package conflict_util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
+import conflict_collision.Collidable;
 import utopia.genesis.util.HelpMath;
 import utopia.genesis.util.Line;
+import utopia.genesis.util.Transformation;
 import utopia.genesis.util.Vector3D;
 
 /**
@@ -38,7 +41,7 @@ public class CollisionCheck
 	 * there is a collision, null otherwise. Intersection points will be null if not desired 
 	 * or if there is no collision. An array of length 0 or 2 otherwise.
 	 */
-	public static CollisionData circleIntersection(Circle first, Circle second, 
+	public static CollisionData checkCircleCollision(Circle first, Circle second, 
 			boolean calculateIntersectionPoints, boolean calculateMTV)
 	{
 		// Calculates the vector separating the circles
@@ -336,6 +339,144 @@ public class CollisionCheck
 		return new CollisionData(true, mtv, collisionPoints);
 	}
 	
+	/**
+	 * Checks if the two objects collide with each other and returns the collected data
+	 * @param first The first object
+	 * @param second The second object
+	 * @param calculateMTV Should the minimum translation vector (MTV) be calculated
+	 * @param calculateCollisionPoints In case of a collision, should the collision points be 
+	 * calculated
+	 * @return The data collected during the collision check
+	 */
+	public static CollisionData checkCollidableCollisions(Collidable first, Collidable second, 
+			boolean calculateMTV, boolean calculateCollisionPoints)
+	{
+		// First checks the bounding boxes, if necessary
+		if (first.getCollisionInformation().usesBoundingBox() || 
+				second.getCollisionInformation().usesBoundingBox())
+		{
+			// The check is done in absolute space
+			if (!checkPolygonCollision(
+					first.getCollisionInformation().getBoundingBox().transformedWith(
+					first.getTransformation()), 
+					second.getCollisionInformation().getBoundingBox().transformedWith(
+					second.getTransformation()), false, false).collided())
+				return CollisionData.noCollision();
+		}
+		
+		// Checks whether to use circles, polygons or both
+		boolean polygonUsed = false, circlesUsed = false, transformCircles = false;
+		
+		if (first.getCollisionInformation().usesCircles() || 
+				second.getCollisionInformation().usesCircles())
+			circlesUsed = true;
+		if (first.getCollisionInformation().usesPolygons() || 
+				second.getCollisionInformation().usesPolygons())
+			polygonUsed = true;
+		if (circlesUsed && (polygonUsed || (
+				Circle.supportsTransformation(first.getTransformation()) && 
+				Circle.supportsTransformation(second.getTransformation()))))
+			transformCircles = true;
+		
+		// if only circles are used and they are not transformed, checks circle collision
+		if (circlesUsed && !transformCircles)
+		{
+			for (Circle circle1 : first.getCollisionInformation().getCircles())
+			{
+				Circle transformedCircle1 = circle1.transformedWith(first.getTransformation());
+				for (Circle circle2 : second.getCollisionInformation().getCircles())
+				{
+					CollisionData cData = checkCircleCollision(transformedCircle1, 
+							circle2.transformedWith(second.getTransformation()), 
+							calculateCollisionPoints, calculateMTV);
+					if (cData.collided())
+						return cData;
+				}
+			}
+		}
+		// Otherwise uses polygons instead
+		else
+		{
+			// First checks for collisions between the basic polygons
+			CollisionData cData = checkMultiPolygonCollision(
+					first.getCollisionInformation().getPolygons(), first.getTransformation(), 
+					second.getCollisionInformation().getPolygons(), second.getTransformation(), 
+					calculateCollisionPoints, calculateMTV);
+			if (cData.collided())
+				return cData;
+			
+			// Next adds the circle polygons to the mix, if necessary
+			if (circlesUsed)
+			{
+				List<Polygon> firstCirclePolygons = 
+						first.getCollisionInformation().getCirclePolygons();
+				cData = checkMultiPolygonCollision(firstCirclePolygons, 
+						first.getTransformation(), 
+						second.getCollisionInformation().getPolygons(), 
+						second.getTransformation(), calculateCollisionPoints, calculateMTV);
+				if (cData.collided())
+					return cData;
+				
+				if (second.getCollisionInformation().usesCircles())
+				{
+					List<Polygon> secondCirclePolygons = 
+							second.getCollisionInformation().getCirclePolygons();
+					firstCirclePolygons.addAll(first.getCollisionInformation().getPolygons());
+					cData = checkMultiPolygonCollision(firstCirclePolygons, 
+							first.getTransformation(), secondCirclePolygons, 
+							second.getTransformation(), calculateCollisionPoints, calculateMTV);
+					
+					return cData;
+				}
+			}
+			else
+				return cData;
+		}
+		
+		return CollisionData.noCollision();
+	}
+	
+	private static CollisionData checkMultiPolygonCollision(
+			Collection<? extends Polygon> firstPolygons, Transformation firstTransformation, 
+			Collection<? extends Polygon> secondPolygons, Transformation secondTransformation, 
+			boolean calculateCollisionPoints, boolean calculateMTV)
+	{
+		if (firstPolygons.isEmpty() || secondPolygons.isEmpty())
+			return CollisionData.noCollision();
+		
+		List<Polygon> transformedSecondPolygons = null;
+		for (Polygon polygon1 : firstPolygons)
+		{
+			Polygon transformedPolygon1 = polygon1.transformedWith(firstTransformation);
+			if (transformedSecondPolygons == null)
+			{
+				transformedSecondPolygons = new ArrayList<>();
+				for (Polygon polygon2 : secondPolygons)
+				{
+					Polygon transformedPolygon2 = polygon2.transformedWith(secondTransformation);
+					transformedSecondPolygons.add(transformedPolygon2);
+					
+					CollisionData colData = checkPolygonCollision(transformedPolygon1, 
+							transformedPolygon2, calculateCollisionPoints, calculateMTV);
+					if (colData.collided())
+						return colData;
+				}
+			}
+			else
+			{
+				for (Polygon transformedPolygon2 : transformedSecondPolygons)
+				{
+					CollisionData colData = checkPolygonCollision(transformedPolygon1, 
+							transformedPolygon2, calculateCollisionPoints, calculateMTV);
+					if (colData.collided())
+						return colData;
+				}
+			}
+		}
+		
+		return CollisionData.noCollision();
+	}
+	
 	/*
 	 * Checks whether a polygon collides with a circle
 	 * @param polygon A polygon
@@ -469,10 +610,10 @@ public class CollisionCheck
 		@Override
 		public int compare(Vector3D o1, Vector3D o2)
 		{
-			if (HelpMath.areApproximatelyEqual(o1.getFirst(), o2.getFirst()))
-				return (int) (100 * (o1.getSecond() - o2.getSecond()));
+			if (HelpMath.areApproximatelyEqual(o1.getX(), o2.getX()))
+				return (int) (100 * (o1.getY() - o2.getY()));
 			else
-				return (int) (100* (o1.getFirst() - o2.getFirst()));
+				return (int) (100* (o1.getX() - o2.getX()));
 		}	
 	}
 }
