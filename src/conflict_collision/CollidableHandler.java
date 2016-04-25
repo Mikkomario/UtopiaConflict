@@ -1,5 +1,6 @@
 package conflict_collision;
 
+import conflict_util.CollisionCheck;
 import conflict_util.CollisionData;
 import utopia.inception.handling.Handler;
 import utopia.inception.handling.HandlerType;
@@ -30,32 +31,21 @@ public class CollidableHandler extends Handler<Collidable>
 	protected boolean handleObject(Collidable h)
 	{
 		// An object can't collide with itself
-		// TODO: Actually should check against the listener's collidable, since it may be different
-		if (h == null || h == this.lastListener)
+		if (h == null || h.equals(this.lastListener.getCollisionListeningInformation().getCollidable()))
 			return true;
 		
 		// Checks if the two objects accept each other as collided objects (= is collision 
 		// checking necessary)
 		if (h.getCollisionInformation() == null || 
 				!h.getCollisionInformation().allowsCollisionEventsFor(this.lastListener) || 
-				!this.lastListener.getCollisionChecker().isInterestedInCollisionsWith(h))
+				!this.lastListener.getCollisionListeningInformation().isInterestedInCollisionsWith(h))
 			return true;
 		
-		// Checks which data should be collected
-		boolean mtvRequired = false;
-		boolean pointsRequired = false;
-		if (this.lastListener.getCollisionChecker().collisionPointsShouldBeCalculated())
-		{
-			mtvRequired = true;
-			pointsRequired = true;
-		}
-		else if (this.lastListener.getCollisionChecker().mtvShouldBeCalculated())
-			mtvRequired = true;
-		
 		// Checks for collisions between the collidable and the collision listener
-		CollisionData data = 
-				this.lastListener.getCollisionChecker().checkForCollisionsWith(h, 
-				mtvRequired, pointsRequired);
+		CollisionData data = CollisionCheck.checkCollidableCollisions(
+				this.lastListener.getCollisionListeningInformation().getCollidable(), h, 
+				this.lastListener.getCollisionListeningInformation().mtvShouldBeCalculated(), 
+				this.lastListener.getCollisionListeningInformation().collisionPointsShouldBeCalculated());
 		
 		// If there was a collision, informs the listener
 		if (data.collided())

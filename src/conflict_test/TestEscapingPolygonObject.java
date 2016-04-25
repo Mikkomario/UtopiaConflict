@@ -1,6 +1,6 @@
 package conflict_test;
 
-import conflict_collision.CollisionChecker;
+import conflict_collision.CollisionListeningInformation;
 import conflict_collision.CollisionEvent;
 import conflict_collision.CollisionListener;
 import utopia.genesis.util.Transformation;
@@ -15,7 +15,7 @@ public class TestEscapingPolygonObject extends TestPolygonObject implements Coll
 {
 	// ATTRIBUTES	----------------------
 	
-	private CollisionChecker collisionChecker;
+	private CollisionListeningInformation collisionChecker;
 	
 	
 	// CONSTRUCTOR	----------------------
@@ -29,7 +29,7 @@ public class TestEscapingPolygonObject extends TestPolygonObject implements Coll
 		super(vertexAmount);
 		
 		// Initializes attributes
-		this.collisionChecker = new CollisionChecker(this, true, false);
+		this.collisionChecker = new CollisionListeningInformation(this, true, false);
 		this.collisionChecker.limitCheckedClassesTo(new Class<?>[] {TestPolygonObject.class});
 	}
 	
@@ -37,7 +37,7 @@ public class TestEscapingPolygonObject extends TestPolygonObject implements Coll
 	// IMPLEMENTED METHODS	-----------------
 
 	@Override
-	public CollisionChecker getCollisionChecker()
+	public CollisionListeningInformation getCollisionListeningInformation()
 	{
 		return this.collisionChecker;
 	}

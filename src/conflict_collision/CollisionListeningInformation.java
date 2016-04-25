@@ -6,7 +6,7 @@ package conflict_collision;
  * @author Mikko Hilpinen
  * @since 19.12.2014
  */
-public class CollisionChecker
+public class CollisionListeningInformation
 {	
 	// ATTRIBUTES	-----------------------
 	
@@ -25,7 +25,7 @@ public class CollisionChecker
 	 * but is slightly more taxing to calculate.
 	 * @param collisionPointWanted Does the user want the collision points to be calculated.
 	 */
-	public CollisionChecker(Collidable user, boolean mtvWanted, boolean collisionPointWanted)
+	public CollisionListeningInformation(Collidable user, boolean mtvWanted, boolean collisionPointWanted)
 	{
 		// Initializes attributes
 		this.user = user;

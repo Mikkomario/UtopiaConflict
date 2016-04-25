@@ -2,7 +2,7 @@ package conflict_collision;
 
 import java.util.List;
 
-import conflict_collision.CollisionChecker.CollisionData;
+import conflict_util.CollisionData;
 import utopia.genesis.util.Vector3D;
 
 /**

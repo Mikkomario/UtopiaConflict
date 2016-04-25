@@ -15,7 +15,7 @@ public interface CollisionListener extends Handled
 	 * collision checking
 	 * @return The collision checker the object uses
 	 */
-	public CollisionChecker getCollisionChecker();
+	public CollisionListeningInformation getCollisionListeningInformation();
 	
 	/**
 	 * CollisionListeners should react to collision events with certain objects

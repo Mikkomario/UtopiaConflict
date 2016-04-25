@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import conflict_collision.Collidable;
-import conflict_collision.CollisionChecker;
+import conflict_collision.CollisionListeningInformation;
 import conflict_collision.CollisionEvent;
 import conflict_collision.CollisionInformation;
 import conflict_collision.CollisionListener;
@@ -32,7 +32,7 @@ public class TestCharacter extends SimpleHandled implements
 {
 	// ATTRIBUTES	----------------------------
 	
-	private CollisionChecker collisionChecker;
+	private CollisionListeningInformation collisionChecker;
 	private CollisionInformation collisionInformation;
 	private EventSelector<KeyEvent> keyEventSelector;
 	private Transformation transformation;
@@ -51,7 +51,7 @@ public class TestCharacter extends SimpleHandled implements
 		Vector3D[] vertices = {new Vector3D(30, 0), new Vector3D(-20, -20), 
 				new Vector3D(-20, 20)};
 		
-		this.collisionChecker = new CollisionChecker(this, true, true);
+		this.collisionChecker = new CollisionListeningInformation(this, true, true);
 		this.collisionInformation = new CollisionInformation(vertices);
 		this.keyEventSelector = KeyEvent.createEventTypeSelector(KeyEventType.DOWN);
 		this.transformation = new Transformation(position);
@@ -149,7 +149,7 @@ public class TestCharacter extends SimpleHandled implements
 	}
 
 	@Override
-	public CollisionChecker getCollisionChecker()
+	public CollisionListeningInformation getCollisionListeningInformation()
 	{
 		return this.collisionChecker;
 	}
