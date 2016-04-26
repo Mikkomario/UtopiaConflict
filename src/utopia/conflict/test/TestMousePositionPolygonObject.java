@@ -1,6 +1,6 @@
-package conflict_test;
+package utopia.conflict.test;
 
-import conflict_util.CollisionCheck;
+import utopia.conflict.util.CollisionCheck;
 import utopia.genesis.event.MouseEvent;
 import utopia.genesis.event.MouseListener;
 import utopia.genesis.util.Vector3D;

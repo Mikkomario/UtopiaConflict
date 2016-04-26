@@ -1,7 +1,7 @@
-package conflict_collision;
+package utopia.conflict.event;
 
-import conflict_util.CollisionCheck;
-import conflict_util.CollisionData;
+import utopia.conflict.util.CollisionCheck;
+import utopia.conflict.util.CollisionData;
 import utopia.inception.handling.Handler;
 import utopia.inception.handling.HandlerType;
 

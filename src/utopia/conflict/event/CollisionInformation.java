@@ -1,11 +1,11 @@
-package conflict_collision;
+package utopia.conflict.event;
 
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import conflict_util.Circle;
-import conflict_util.Polygon;
+import utopia.conflict.util.Circle;
+import utopia.conflict.util.Polygon;
 import utopia.genesis.util.HelpMath;
 import utopia.genesis.util.Vector3D;
 

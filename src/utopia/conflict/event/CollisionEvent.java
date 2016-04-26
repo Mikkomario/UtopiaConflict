@@ -1,8 +1,8 @@
-package conflict_collision;
+package utopia.conflict.event;
 
 import java.util.List;
 
-import conflict_util.CollisionData;
+import utopia.conflict.util.CollisionData;
 import utopia.genesis.util.Vector3D;
 
 /**

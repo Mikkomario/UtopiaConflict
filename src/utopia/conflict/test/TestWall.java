@@ -1,13 +1,13 @@
-package conflict_test;
+package utopia.conflict.test;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 
-import conflict_collision.Collidable;
-import conflict_collision.CollisionInformation;
-import conflict_util.Circle;
-import conflict_util.Polygon;
+import utopia.conflict.event.Collidable;
+import utopia.conflict.event.CollisionInformation;
+import utopia.conflict.util.Circle;
+import utopia.conflict.util.Polygon;
 import utopia.genesis.event.Drawable;
 import utopia.genesis.util.Transformation;
 import utopia.genesis.util.Vector3D;

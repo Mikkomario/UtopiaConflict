@@ -1,4 +1,4 @@
-package conflict_collision;
+package utopia.conflict.event;
 
 /**
  * CollisionCheckers make the necessary calculations to check if collidables collide with 

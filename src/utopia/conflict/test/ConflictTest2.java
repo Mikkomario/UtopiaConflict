@@ -1,7 +1,7 @@
-package conflict_test;
+package utopia.conflict.test;
 
-import conflict_collision.CollidableHandler;
-import conflict_collision.CollisionHandler;
+import utopia.conflict.event.CollidableHandler;
+import utopia.conflict.event.CollisionHandler;
 import utopia.genesis.event.StepHandler;
 import utopia.genesis.util.Vector3D;
 import utopia.genesis.video.GamePanel;

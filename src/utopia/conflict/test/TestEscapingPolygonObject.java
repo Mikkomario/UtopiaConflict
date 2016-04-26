@@ -1,8 +1,8 @@
-package conflict_test;
+package utopia.conflict.test;
 
-import conflict_collision.CollisionListeningInformation;
-import conflict_collision.CollisionEvent;
-import conflict_collision.CollisionListener;
+import utopia.conflict.event.CollisionEvent;
+import utopia.conflict.event.CollisionListener;
+import utopia.conflict.event.CollisionListeningInformation;
 import utopia.genesis.util.Transformation;
 import utopia.genesis.util.Vector3D;
 

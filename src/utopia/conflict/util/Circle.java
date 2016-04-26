@@ -1,4 +1,4 @@
-package conflict_util;
+package utopia.conflict.util;
 
 import java.awt.Graphics2D;
 

@@ -1,11 +1,11 @@
-package conflict_util;
+package utopia.conflict.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
-import conflict_collision.Collidable;
+import utopia.conflict.event.Collidable;
 import utopia.genesis.util.HelpMath;
 import utopia.genesis.util.Line;
 import utopia.genesis.util.Transformation;

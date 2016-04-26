@@ -1,4 +1,4 @@
-package conflict_test;
+package utopia.conflict.test;
 
 import java.awt.Color;
 import java.awt.Graphics2D;

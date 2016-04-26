@@ -1,4 +1,4 @@
-package conflict_util;
+package utopia.conflict.util;
 
 import java.util.ArrayList;
 import java.util.List;

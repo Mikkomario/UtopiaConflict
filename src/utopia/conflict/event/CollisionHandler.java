@@ -1,4 +1,4 @@
-package conflict_collision;
+package utopia.conflict.event;
 
 import utopia.genesis.event.Actor;
 import utopia.genesis.event.ActorHandler;

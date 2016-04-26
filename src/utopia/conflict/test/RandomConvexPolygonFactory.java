@@ -1,10 +1,10 @@
-package conflict_test;
+package utopia.conflict.test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import conflict_util.Polygon;
+import utopia.conflict.util.Polygon;
 import utopia.genesis.util.Transformation;
 import utopia.genesis.util.Vector3D;
 

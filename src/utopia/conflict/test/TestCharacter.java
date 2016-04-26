@@ -1,4 +1,4 @@
-package conflict_test;
+package utopia.conflict.test;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -6,12 +6,12 @@ import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.List;
 
-import conflict_collision.Collidable;
-import conflict_collision.CollisionListeningInformation;
-import conflict_util.CollisionCheck;
-import conflict_collision.CollisionEvent;
-import conflict_collision.CollisionInformation;
-import conflict_collision.CollisionListener;
+import utopia.conflict.event.Collidable;
+import utopia.conflict.event.CollisionEvent;
+import utopia.conflict.event.CollisionInformation;
+import utopia.conflict.event.CollisionListener;
+import utopia.conflict.event.CollisionListeningInformation;
+import utopia.conflict.util.CollisionCheck;
 import utopia.genesis.event.Drawable;
 import utopia.genesis.event.KeyEvent;
 import utopia.genesis.event.KeyEvent.KeyEventType;
