@@ -8,6 +8,7 @@ import java.util.List;
 
 import conflict_collision.Collidable;
 import conflict_collision.CollisionListeningInformation;
+import conflict_util.CollisionCheck;
 import conflict_collision.CollisionEvent;
 import conflict_collision.CollisionInformation;
 import conflict_collision.CollisionListener;
@@ -47,16 +48,14 @@ public class TestCharacter extends SimpleHandled implements
 	 * @param position The new position of the character
 	 */
 	public TestCharacter(Vector3D position)
-	{
-		Vector3D[] vertices = {new Vector3D(30, 0), new Vector3D(-20, -20), 
-				new Vector3D(-20, 20)};
-		
+	{	
 		this.collisionChecker = new CollisionListeningInformation(this, true, true);
-		this.collisionInformation = new CollisionInformation(vertices);
+		this.collisionInformation = new CollisionInformation(null, new Vector3D(30, 0), 
+				new Vector3D(-20, -20), new Vector3D(-20, 20));
 		this.keyEventSelector = KeyEvent.createEventTypeSelector(KeyEventType.DOWN);
 		this.transformation = new Transformation(position);
 		this.lastCollisionPoints = new ArrayList<>();
-		this.lastEdge = new Line(Vector3D.zeroVector());
+		this.lastEdge = new Line(Vector3D.ZERO);
 	}
 	
 	
@@ -125,10 +124,6 @@ public class TestCharacter extends SimpleHandled implements
 			getTransformation().transform(g2d);
 			getCollisionInformation().drawCollisionArea(g2d);
 			
-			g2d.setColor(Color.GRAY);
-			int r = (int) getCollisionInformation().getRadius();
-			g2d.drawOval(-r, -r, r * 2, r * 2);
-			
 			g2d.setColor(Color.RED);
 			
 			g2d.setTransform(last);
@@ -136,8 +131,7 @@ public class TestCharacter extends SimpleHandled implements
 			this.lastEdge.draw(g2d);
 			for (Vector3D lastCollisionPosition : this.lastCollisionPoints)
 			{
-				g2d.drawOval(lastCollisionPosition.getFirstInt() - 2, 
-						lastCollisionPosition.getSecondInt() - 2, 4, 4);
+				lastCollisionPosition.drawAsPoint(4, g2d);
 			}
 		}
 	}
@@ -157,23 +151,29 @@ public class TestCharacter extends SimpleHandled implements
 	@Override
 	public void onCollisionEvent(CollisionEvent event)
 	{
-		//if (event.getMTV().equals(Vector3D.zeroVector()))
-		//	return;
-		
-		// Calculates the collision point
-		//this.lastEdge = CollisionChecker.getCollisionEdge(getCollisionInformation().getPolygons().get(0).transformedWith(getTransformation()), event.getMTV());
-		/*
-		this.lastCollisionPoints = CollisionChecker.getCollisionPoints(
-				getCollisionInformation().getPolygons().get(0).transformedWith(
-				getTransformation()), 
-				event.getTarget().getCollisionInformation().getPolygons().get(0).transformedWith(
-				event.getTarget().getTransformation()), event.getMTV());
-		*/
-		this.lastCollisionPoints = event.getCollisionPoints();
-		//System.out.println(this.lastCollisionPoints.size());
-		
-		// Bounces away from the target
-		setTrasformation(getTransformation().plus(
-				Transformation.transitionTransformation(event.getMTV())));
+		if (!event.getMTV().equals(Vector3D.ZERO))
+		{
+				//System.out.println(event.getMTV().getZDirection());
+			//if (event.getMTV().equals(Vector3D.zeroVector()))
+			//	return;
+			
+			// Calculates the collision point
+			this.lastEdge = CollisionCheck.getCollisionEdge(
+					getCollisionInformation().getPolygons().get(0).transformedWith(getTransformation()), 
+					event.getMTV());
+			/*
+			this.lastCollisionPoints = CollisionChecker.getCollisionPoints(
+					getCollisionInformation().getPolygons().get(0).transformedWith(
+					getTransformation()), 
+					event.getTarget().getCollisionInformation().getPolygons().get(0).transformedWith(
+					event.getTarget().getTransformation()), event.getMTV());
+			*/
+			this.lastCollisionPoints = event.getCollisionPoints();
+			//System.out.println(this.lastCollisionPoints.size());
+			
+			// Bounces away from the target
+			setTrasformation(getTransformation().plus(
+					Transformation.transitionTransformation(event.getMTV())));
+		}
 	}
 }

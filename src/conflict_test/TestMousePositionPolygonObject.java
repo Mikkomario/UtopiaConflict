@@ -1,5 +1,6 @@
 package conflict_test;
 
+import conflict_util.CollisionCheck;
 import utopia.genesis.event.MouseEvent;
 import utopia.genesis.event.MouseListener;
 import utopia.genesis.util.Vector3D;
@@ -58,8 +59,7 @@ public class TestMousePositionPolygonObject extends TestPolygonObject implements
 		// Updates position
 		setTrasformation(getTransformation().withPosition(event.getPosition()));
 		// Checks collisions
-		if (getPolygon().transformedWith(getTransformation()).collidesWith(
-				this.other.getPolygon().transformedWith(this.other.getTransformation())))
+		if (CollisionCheck.checkCollidableCollisions(this, this.other, false, false).collided())
 			System.out.println("Polygons collide");
 	}
 }

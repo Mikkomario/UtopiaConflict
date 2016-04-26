@@ -39,7 +39,7 @@ public class MouseRotatingTestPolygonObject extends TestPolygonObject implements
 		// Initializes attributes
 		this.selector = new StrictEventSelector<>();
 		this.selector.addRequiredFeature(MouseEvent.MouseMovementEventType.OVER);
-		this.lastMousePosition = Vector3D.zeroVector();
+		this.lastMousePosition = Vector3D.ZERO;
 	}
 	
 	
@@ -79,8 +79,7 @@ public class MouseRotatingTestPolygonObject extends TestPolygonObject implements
 			AffineTransform lastTransform = g2d.getTransform();
 			getTransformation().transform(g2d);
 			g2d.setColor(Color.BLACK);
-			g2d.drawOval(this.lastMousePosition.getFirstInt() - 5, 
-					this.lastMousePosition.getSecondInt() - 5, 10, 10);
+			this.lastMousePosition.drawAsPoint(10, g2d);
 			g2d.setTransform(lastTransform);
 		}
 		

@@ -25,6 +25,16 @@ public class Circle
 	// CONSTRUCTOR	--------------
 	
 	/**
+	 * Creates a new circle with the center at the origin
+	 * @param radius The circle's radius
+	 */
+	public Circle(double radius)
+	{
+		this.center = Vector3D.ZERO;
+		this.radius = radius;
+	}
+	
+	/**
 	 * Creates a new circle
 	 * @param center The circle's center point
 	 * @param radius The circle's radius

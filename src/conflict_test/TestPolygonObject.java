@@ -48,7 +48,7 @@ public class TestPolygonObject extends SimpleHandled implements Transformable, D
 		this.polygon = new Polygon(vertices);
 		
 		// Creates collision information
-		this.collisionInformation = new CollisionInformation(vertices);
+		this.collisionInformation = new CollisionInformation(null, vertices);
 	}
 	
 	/**
@@ -59,7 +59,7 @@ public class TestPolygonObject extends SimpleHandled implements Transformable, D
 	{
 		this.polygon = polygon;
 		this.transformation = new Transformation();
-		this.collisionInformation = new CollisionInformation(polygon.getVertices());
+		this.collisionInformation = new CollisionInformation(null, polygon.getVertices());
 	}
 	
 	
@@ -78,9 +78,10 @@ public class TestPolygonObject extends SimpleHandled implements Transformable, D
 			g2d.setColor(Color.BLUE);
 			this.polygon.drawPolygon(g2d);
 			
-			g2d.setColor(Color.BLACK);
+			g2d.setColor(Color.ORANGE);
 			this.polygon.drawCollisionAxes(g2d);
 			
+			g2d.setColor(Color.BLACK);
 			g2d.translate(0, 100);
 			this.polygon.getProjection(new Vector3D(1, 0)).draw(g2d);
 			

@@ -53,8 +53,9 @@ public class ConflictTest2
 		
 		// Creates the objects
 		handlers.add(new TestCharacter(new Vector3D(400, 300)),
-				new TestWall(Vector3D.zeroVector(), new Vector3D(50, 400)),
-				new TestWall(new Vector3D(600, 200), new Vector3D(75, 75)));
+				new TestWall(Vector3D.ZERO, new Vector3D(50, 400)),
+				new TestWall(new Vector3D(600, 200), new Vector3D(75, 75)), 
+				new TestWall(new Vector3D(50, 600), 96));
 		
 		stepHandler.start();
 	}

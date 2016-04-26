@@ -151,9 +151,12 @@ public class CollisionInformation
 	public List<Polygon> getCirclePolygons()
 	{
 		List<Polygon> polygons = new ArrayList<>();
-		for (Circle circle : this.circles)
+		if (usesCircles())
 		{
-			polygons.add(circle.toPolygon(getMinCircleVertexAmount(), getMaxCircleEdgeLength()));
+			for (Circle circle : this.circles)
+			{
+				polygons.add(circle.toPolygon(getMinCircleVertexAmount(), getMaxCircleEdgeLength()));
+			}
 		}
 		
 		return polygons;

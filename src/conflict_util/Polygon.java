@@ -33,7 +33,7 @@ public class Polygon
 	 * @param vertices The points that form this polygon. The points should be in order so that 
 	 * they form the lines that form this polygon.
 	 */
-	public Polygon(Vector3D[] vertices)
+	public Polygon(Vector3D... vertices)
 	{
 		// Initializes attributes
 		this.vertices = vertices;
@@ -87,6 +87,31 @@ public class Polygon
 
 	
 	// OTHER METHODS	----------------------
+	/*
+	public static void main(String[] args)
+	{
+		Polygon polygon = new Polygon(Vector3D.ZERO, new Vector3D(10, 0), new Vector3D(5, 8));
+		
+		System.out.println("Vertices:");
+		for (Vector3D vertex : polygon.getVertices())
+		{
+			System.out.println(vertex);
+		}
+		
+		System.out.println("\nEdges and normals:");
+		for (Line edge : polygon.getEdges())
+		{
+			System.out.println(edge.getStart() + " --> " + edge.getEnd() + " ... " + 
+					edge.toVector().normal2D());
+		}
+		
+		System.out.println("\nPolygon axes");
+		for (Vector3D axis : polygon.getCollisionAxes())
+		{
+			System.out.println(axis);
+		}
+	}
+	*/
 	
 	/**
 	 * @return How many vertexes does this polygon have
@@ -435,10 +460,9 @@ public class Polygon
 	 */
 	public void drawPolygon(Graphics2D g2d)
 	{
-		for (int i = 0; i < getVertexAmount(); i++)
+		for (Line edge : getEdges())
 		{
-			g2d.drawLine(getVertex(i).getXInt(), getVertex(i).getYInt(), 
-					getVertex(i + 1).getXInt(), getVertex(i + 1).getYInt());
+			edge.draw(g2d);
 		}
 	}
 	

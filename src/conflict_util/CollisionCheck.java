@@ -19,6 +19,8 @@ import utopia.genesis.util.Vector3D;
  */
 public class CollisionCheck
 {
+	// TODO: Not working
+	
 	// CONSTRUCTOR	------------------
 	
 	private CollisionCheck()
@@ -246,11 +248,13 @@ public class CollisionCheck
 		ProjectionComparator comparator = new ProjectionComparator();
 		
 		// If there is no overlap, returns null
-		if (comparator.compare(p1.getEnd(), p2.getStart()) < 0 || 
-				comparator.compare(p2.getEnd(), p1.getStart()) < 0)
+		if (comparator.compare(p1.getEnd(), p2.getStart()) <= 0 || 
+				comparator.compare(p2.getEnd(), p1.getStart()) <= 0)
 			return null;
 		
 		// Otherwise checks if there is containment
+		// TODO: Broken
+		/*
 		if (comparator.compare(p1.getEnd(), p2.getStart()) >= 0 && 
 				comparator.compare(p2.getEnd(), p1.getStart()) >= 0)
 		{
@@ -263,6 +267,7 @@ public class CollisionCheck
 			else
 				return mtv2;
 		}
+		*/
 			
 		// Otherwise just returns the easiest way out (MTV)
 		if (comparator.compare(p1.getStart(), p2.getStart()) < 0)
@@ -374,8 +379,8 @@ public class CollisionCheck
 				second.getCollisionInformation().usesPolygons())
 			polygonUsed = true;
 		if (circlesUsed && (polygonUsed || (
-				Circle.supportsTransformation(first.getTransformation()) && 
-				Circle.supportsTransformation(second.getTransformation()))))
+				!Circle.supportsTransformation(first.getTransformation()) || 
+				!Circle.supportsTransformation(second.getTransformation()))))
 			transformCircles = true;
 		
 		// if only circles are used and they are not transformed, checks circle collision
