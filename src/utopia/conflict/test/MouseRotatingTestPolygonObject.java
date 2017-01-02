@@ -22,7 +22,7 @@ public class MouseRotatingTestPolygonObject extends TestPolygonObject implements
 {
 	// ATTRIBUTES	-------------------------
 	
-	private StrictEventSelector<MouseEvent, MouseEvent.Feature> selector;
+	private StrictEventSelector selector;
 	private Vector3D lastMousePosition;
 	
 	
@@ -37,7 +37,7 @@ public class MouseRotatingTestPolygonObject extends TestPolygonObject implements
 		super(vertexAmount);
 		
 		// Initializes attributes
-		this.selector = new StrictEventSelector<>();
+		this.selector = new StrictEventSelector();
 		this.selector.addRequiredFeature(MouseEvent.MouseMovementEventType.OVER);
 		this.lastMousePosition = Vector3D.ZERO;
 	}
@@ -46,7 +46,7 @@ public class MouseRotatingTestPolygonObject extends TestPolygonObject implements
 	// IMPLEMENTED METHODS	------------------
 
 	@Override
-	public EventSelector<MouseEvent> getMouseEventSelector()
+	public EventSelector getMouseEventSelector()
 	{
 		return this.selector;
 	}
@@ -68,7 +68,7 @@ public class MouseRotatingTestPolygonObject extends TestPolygonObject implements
 	{
 		// Rotates
 		setTrasformation(getTransformation().plus(Transformation.rotationTransformation(
-				2 * event.getDuration())));
+				2 * event.getDurationMillis())));
 	}
 	
 	@Override

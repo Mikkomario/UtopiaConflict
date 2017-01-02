@@ -35,7 +35,7 @@ public class TestCharacter extends SimpleHandled implements
 	
 	private CollisionListeningInformation collisionChecker;
 	private CollisionInformation collisionInformation;
-	private EventSelector<KeyEvent> keyEventSelector;
+	private EventSelector keyEventSelector;
 	private Transformation transformation;
 	private List<Vector3D> lastCollisionPoints;
 	private Line lastEdge;
@@ -80,7 +80,7 @@ public class TestCharacter extends SimpleHandled implements
 	}
 
 	@Override
-	public EventSelector<KeyEvent> getKeyEventSelector()
+	public EventSelector getKeyEventSelector()
 	{
 		return this.keyEventSelector;
 	}
@@ -99,8 +99,8 @@ public class TestCharacter extends SimpleHandled implements
 		else if (e.getKey() == KeyEvent.RIGHT)
 			rotation = -3;
 		
-		rotation *= e.getDuration();
-		speed *= e.getDuration();
+		rotation *= e.getDurationMillis();
+		speed *= e.getDurationMillis();
 		
 		Transformation change = null;
 		

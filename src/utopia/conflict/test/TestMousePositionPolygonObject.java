@@ -19,7 +19,7 @@ public class TestMousePositionPolygonObject extends TestPolygonObject implements
 	// ATTRIBUTES	-------------------------------
 	
 	private TestPolygonObject other;
-	private EventSelector<MouseEvent> selector;
+	private EventSelector selector;
 	
 	
 	// CONSTRUCTOR	-------------------------------
@@ -42,7 +42,7 @@ public class TestMousePositionPolygonObject extends TestPolygonObject implements
 	// IMPLEMENTED METHODS	-------------------------
 
 	@Override
-	public EventSelector<MouseEvent> getMouseEventSelector()
+	public EventSelector getMouseEventSelector()
 	{
 		return this.selector;
 	}
