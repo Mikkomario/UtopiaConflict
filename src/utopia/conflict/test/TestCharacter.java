@@ -91,13 +91,13 @@ public class TestCharacter extends SimpleHandled implements
 		double rotation = 0, speed = 0;
 		
 		if (e.getKey() == KeyEvent.UP)
-			speed = 5;
+			speed = 0.5;
 		else if (e.getKey() == KeyEvent.DOWN)
-			speed = -5;
+			speed = -0.5;
 		else if (e.getKey() == KeyEvent.LEFT)
-			rotation = 3;
+			rotation = 0.5;
 		else if (e.getKey() == KeyEvent.RIGHT)
-			rotation = -3;
+			rotation = -0.5;
 		
 		rotation *= e.getDurationMillis();
 		speed *= e.getDurationMillis();
